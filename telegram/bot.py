@@ -13,9 +13,9 @@ from telegram import Bot
 from telegram.error import TelegramError
 
 # Configuration
-API_ENDPOINT = os.getenv('API_ENDPOINT', 'http://localhost:8000/api/v1/lab/market-reference')
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', 'YOUR_CHAT_ID_HERE')
+API_ENDPOINT = os.getenv('API_ENDPOINT', 'https://signalgeniusai-production.up.railway.app/api/v1/lab/market-reference')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '8371104272:AAFlp0NA8wz-HEKOqtsbyGR1_m8C3pzZO2c')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '7985984228')
 SYMBOL = 'EURUSD'
 TIMEFRAME = 'M15'
 MIN_CONFIDENCE = 95
