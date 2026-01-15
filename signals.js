@@ -42,21 +42,37 @@ function updateThemeIcon(theme, iconElement) {
   iconElement.textContent = theme === 'dark' ? '🌙' : '☀️';
 }
 
-// Load signal data
+// Load signal data with Snapshot-First Strategy
 async function loadSignal() {
+  // 1️⃣ Render Cached Snapshot IMMEDIATELY
+  const cached = localStorage.getItem('latest_signal');
+  if (cached) {
+    console.log('⚡ Rendered cached snapshot');
+    renderSignal(JSON.parse(cached), true); // true = isCached
+  } else {
+    renderWaitingState();
+  }
+
+  // 2️⃣ Fetch Fresh Data in Background
   try {
     const signal = await fetchSignalData();
 
-    if (signal && signal.confidence >= 95) {
-      renderSignal(signal);
-    } else {
-      renderWaitingState();
+    if (signal) {
+      // 3️⃣ Update UI with fresh data if valid
+      if (signal.confidence >= 95) {
+        renderSignal(signal, false); // false = isLive
+        localStorage.setItem('latest_signal', JSON.stringify(signal));
+      } else {
+        // If live signal is low confidence but we have a cache, 
+        // we might want to keep the cache or show waiting state.
+        // For now, let's respect the "Scanning" state if confidence drops.
+        renderWaitingState();
+      }
     }
-
-    lastUpdateTime = new Date();
   } catch (error) {
-    console.error('Error loading signal:', error);
-    renderWaitingState();
+    console.error('Background fetch failed:', error);
+    // If fetch fails, we just keep showing the cached snapshot if it exists.
+    // Optionally, we could show a subtle "Offline - Using Snapshot" toast here.
   }
 }
 
@@ -71,73 +87,37 @@ async function fetchSignalData() {
 
     const data = await response.json();
 
-    // Check if API returned "no signal" message
     if (data.message) {
-      console.log('No high-confidence signal available');
       return null;
     }
 
     return data;
   } catch (error) {
-    console.error('API call failed, using mock data:', error);
-    // Fallback to mock data if API fails
-    return getMockSignal();
-  }
-}
-
-// Mock signal generator
-function getMockSignal() {
-  const now = new Date();
-  const confidence = 96; // High confidence for demo
-
-  if (confidence < 95) {
+    console.warn('API call failed, falling back to mock or cache:', error);
+    // Fallback to mock data ONLY if enabled/needed for demo
+    // return getMockSignal(); 
     return null;
   }
-
-  return {
-    asset: "EUR/USD",
-    direction: "BUY",
-    direction_icon: "🟢",
-    timeframe: "M15",
-    session: "London → New York Overlap",
-
-    price_levels: {
-      entry_zone: ["1.16710", "1.16750"],
-      take_profit: "1.17080",
-      stop_loss: "1.16480"
-    },
-
-    trade_details: {
-      target_pips: 35,
-      risk_reward: "1 : 1.40",
-      suggested_risk: "0.5% – 1%"
-    },
-
-    trade_type: "Intraday",
-    confidence: confidence,
-
-    posted_at_utc: now.toISOString(),
-
-    expiry_rules: {
-      session_only: true,
-      expires_at: "NY_CLOSE",
-      invalidate_if_missed_entry: true
-    },
-
-    disclaimer: "Not financial advice. Trade responsibly."
-  };
 }
 
 // Render signal card
-function renderSignal(signal) {
+function renderSignal(signal, isCached = false) {
   const container = document.getElementById('signal-container');
   const directionClass = signal.direction.toLowerCase();
+
+  // UX Copy Definitions
+  const statusBadge = isCached
+    ? `<span class="status-badge cached" style="background: rgba(255, 193, 7, 0.1); color: #ffc107; padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(255, 193, 7, 0.2);">⚡ AI SNAPSHOT LOADED</span>`
+    : `<span class="status-badge live" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.2);">🟢 LIVE UPDATE</span>`;
 
   const html = `
     <div class="bento-card signal-card animate-in">
       <div class="signal-header">
         <div>
-          <h2 class="asset-name">${signal.asset}</h2>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <h2 class="asset-name" style="margin-bottom: 0;">${signal.asset}</h2>
+            ${statusBadge}
+          </div>
           <div class="detail-label">
             ⏳ Timeframe: <strong>${signal.timeframe}</strong> | 🌍 ${signal.session}
           </div>
