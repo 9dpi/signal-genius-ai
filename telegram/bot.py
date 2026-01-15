@@ -41,14 +41,16 @@ async def fetch_signal() -> Optional[Dict]:
 
 
 def format_signal_message(signal: Dict) -> str:
-    """Format signal data into Telegram message using the exact requested template"""
+    """Format signal data into Telegram message using rich tier format"""
     
     # Extract data
     asset = signal.get('asset', 'EUR/USD')
     direction = signal.get('direction', 'BUY').upper()
-    direction_icon = "🟢" if direction == "BUY" else "🔴"
+    direction_icon = signal.get('direction_icon', "🟢")
+    tier_label = signal.get('tier_label', direction)
     timeframe = signal.get('timeframe', 'M15')
     session = signal.get('session', 'London → New York Overlap')
+    risk_note = signal.get('risk_note', '')
     
     price_levels = signal.get('price_levels', {})
     entry_zone = price_levels.get('entry_zone', ['N/A', 'N/A'])
@@ -71,33 +73,35 @@ def format_signal_message(signal: Dict) -> str:
     except:
         posted_str = datetime.now(timezone.utc).strftime('%b %d, %Y — %H:%M UTC')
     
-    # Build message using EXACT template
+    # Build message
     message = f"""Asset: {asset}
 
-📌 Trade: {direction_icon} {direction} (expect price to go {"up" if direction == "BUY" else "down"})
+📌 Trade: {direction_icon} {tier_label} (expect price to go {"up" if direction == "BUY" else "down"})
 
 ⏳ Timeframe: 15-Minute ({timeframe})
 🌍 Session: {session}
 
 💰 Price Levels:
-* Entry Zone: {entry_zone[0]} – {entry_zone[1]}
-* Take Profit (TP): {take_profit}
-* Stop Loss (SL): {stop_loss}
+• Entry Zone: {entry_zone[0]} – {entry_zone[1]}
+• Take Profit (TP): {take_profit}
+• Stop Loss (SL): {stop_loss}
 
 📏 Trade Details:
-* Target: +{target_pips} pips
-* Risk–Reward: {risk_reward}
-* Suggested Risk: {suggested_risk} per trade
+• Target: +{target_pips} pips
+• Risk–Reward: {risk_reward}
+• Suggested Risk: {suggested_risk}
 
 🕒 Trade Type: {trade_type}
 🧠 AI Confidence: {confidence}% ⭐
 
 ⏰ Posted: {posted_str}
 
+ℹ️ Note: {risk_note}
+
 ⏳ Auto-Expiry Rules:
-* Signal is valid for this session only
-* Expires at New York close or if TP or SL is hit
-* Do not enter if price has already moved significantly beyond the entry zone
+• Signal is valid for this session only
+• Expires at New York close or if TP or SL is hit
+• Do not enter if price has already moved significantly beyond the entry zone
 
 —
 ⚠️ Not financial advice. Trade responsibly."""
@@ -128,28 +132,29 @@ def should_send_signal(signal: Dict) -> bool:
     """Check if signal should be sent based on rules"""
     global sent_signals_today, last_check_date
     
-    # Check confidence threshold
+    # 1. Check Confidence Gate
+    # Use telegram_eligible flag if backend provides it, otherwise fallback to threshold
+    telegram_eligible = signal.get('telegram_eligible')
+    if telegram_eligible is False:
+        print(f"⚠️ Signal is not eligible for Telegram (Tier: {signal.get('confidence_tier')})")
+        return False
+        
     confidence = signal.get('confidence', 0)
-    if confidence < MIN_CONFIDENCE:
+    if telegram_eligible is None and confidence < MIN_CONFIDENCE:
         print(f"⚠️ Confidence {confidence}% < {MIN_CONFIDENCE}% - Not sending")
         return False
     
-    # Check if we already sent a signal today
+    # 2. Daily Limit Gate
     today = datetime.now(timezone.utc).date()
-    
-    # Reset tracking if it's a new day
     if last_check_date != today:
         sent_signals_today.clear()
         last_check_date = today
     
-    # Create unique signal ID
     signal_id = f"{signal.get('asset')}_{signal.get('direction')}_{today}"
-    
     if signal_id in sent_signals_today:
         print(f"⚠️ Already sent signal for {signal.get('asset')} today - Not sending")
         return False
     
-    # Mark as sent
     sent_signals_today.add(signal_id)
     return True
 

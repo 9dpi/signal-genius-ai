@@ -115,6 +115,21 @@ function renderSignal(signal, isCached = false) {
   const container = document.getElementById('signal-container');
   const directionClass = signal.direction.toLowerCase();
 
+  // Confidence Tier Logic
+  const isExperimental = signal.confidence_tier === 'MEDIUM';
+  const tierColor = signal.tier_color === 'green' ? '#10b981' : (signal.tier_color === 'yellow' ? '#ffc107' : '#94a3b8');
+
+  // Warning Banner for Experimental Signals
+  const riskBanner = isExperimental
+    ? `<div class="experimental-banner" style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); padding: 12px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 1.5rem;">⚠️</span>
+        <div style="font-size: 0.85rem; color: #ffc107; line-height: 1.4; font-weight: 500;">
+          <strong>Experimental AI Insight:</strong><br>
+          ${signal.risk_note}
+        </div>
+      </div>`
+    : '';
+
   // UX Copy Definitions
   const statusBadge = isCached
     ? `<span class="status-badge cached" style="background: rgba(255, 193, 7, 0.1); color: #ffc107; padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(255, 193, 7, 0.2);">⚡ AI SNAPSHOT LOADED</span>`
@@ -122,6 +137,8 @@ function renderSignal(signal, isCached = false) {
 
   const html = `
     <div class="bento-card signal-card animate-in">
+      ${riskBanner}
+      
       <div class="signal-header">
         <div>
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
@@ -132,8 +149,8 @@ function renderSignal(signal, isCached = false) {
             ⏳ Timeframe: <strong>${signal.timeframe}</strong> | 🌍 ${signal.session}
           </div>
         </div>
-        <div class="direction-badge ${directionClass}">
-          ${signal.direction_icon} ${signal.direction}
+        <div class="direction-badge ${directionClass}" style="border-color: ${tierColor}; color: ${tierColor};">
+          ${signal.direction_icon} ${signal.tier_label || signal.direction}
         </div>
       </div>
       
@@ -187,7 +204,7 @@ function renderSignal(signal, isCached = false) {
             </div>
             <div class="price-item">
               <span class="price-label">AI Confidence:</span>
-              <span class="confidence-badge">⭐ ${signal.confidence}%</span>
+              <span class="confidence-badge" style="color: ${tierColor}">⭐ ${signal.confidence}%</span>
             </div>
           </div>
         </div>
@@ -203,7 +220,9 @@ function renderSignal(signal, isCached = false) {
       </div>
       
       <div style="text-align: center; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--border-color);">
-        <small style="color: var(--text-secondary);">⚠️ ${signal.disclaimer}</small>
+        <small style="color: var(--text-secondary); opacity: 0.8;">${signal.risk_note}</small>
+        <br>
+        <small style="color: var(--text-secondary); opacity: 0.6; font-size: 0.7rem; display: block; margin-top: 8px;">⚠️ ${signal.disclaimer}</small>
       </div>
     </div>
   `;
