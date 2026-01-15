@@ -1,7 +1,12 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.external_client import fetch_candles
-from backend.signal_engine import generate_signal
+try:
+    from external_client import fetch_candles
+    from signal_engine import generate_signal
+except ImportError:
+    from backend.external_client import fetch_candles
+    from backend.signal_engine import generate_signal
 
 app = FastAPI(title="Signal Genius AI MVP")
 
@@ -31,3 +36,9 @@ async def latest_signal():
             "status": "error",
             "message": str(e)
         }
+
+if __name__ == "__main__":
+    import uvicorn
+    # Use PORT environment variable if available (for Railway auto-detect)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
