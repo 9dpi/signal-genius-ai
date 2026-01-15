@@ -57,7 +57,7 @@ def root():
 def health_check():
     """Health check endpoint"""
     return {
-        "status": "healthy",
+        "status": "ok",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "service": "signal-genius-ai-api"
     }
