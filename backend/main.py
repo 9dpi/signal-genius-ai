@@ -84,9 +84,37 @@ def latest_signal(asset: str = Query("EUR/USD", description="Trading asset")):
     - Calls Quantix AI Core reference
     - Validates data through Confidence Gate (≥95%)
     - Caches snapshot (TTL = 15m)
-    - Logs to Supabase Data Layer
+    - Logs to Supabase Data Layer (Optional)
     - Returns unified rich format
     """
+    # FIX 1: Fail-safe check
+    if not is_db_connected():
+        try:
+            signal = get_latest_signal(asset)
+            if signal.get("status") != "no_signal":
+                # Thêm thông tin degraded mode nhưng vẫn trả về signal
+                signal["status_db"] = "disconnected"
+                signal["mode"] = "reference-only"
+                return signal
+            
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "degraded",
+                    "message": "Database unavailable, running in reference-only mode",
+                    "source": "quantix",
+                }
+            )
+        except Exception:
+            return JSONResponse(
+                status_code=200,
+                content={
+                    "status": "degraded",
+                    "message": "Database unavailable, running in reference-only mode",
+                    "source": "quantix",
+                }
+            )
+
     try:
         signal = get_latest_signal(asset)
         
@@ -102,16 +130,25 @@ def latest_signal(asset: str = Query("EUR/USD", description="Trading asset")):
                 }
             )
         
-        # Save to database if new signal
+        # FIX 2: Tách DB khỏi critical path
         if signal.get("source") == "quantix":
-            save_signal_to_db(signal)
+            try:
+                save_signal_to_db(signal)
+            except Exception as e:
+                # Log lỗi nhưng không làm crash app
+                print(f"DEBUG: Supabase save failed: {e}")
         
         return signal
         
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch signal: {str(e)}"
+        # API không bao giờ được 500 vì infra
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Service encountered an issue: {str(e)}",
+                "source": "fail-safe"
+            }
         )
 
 @app.get("/api/v1/signals/active")
@@ -123,16 +160,35 @@ def active_signals(limit: int = Query(10, ge=1, le=100)):
     - Ordered by created_at DESC
     - Limit: 1-100 signals
     """
+    # Fail-safe: Check DB connection first
+    if not is_db_connected():
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "degraded",
+                "message": "Database unavailable",
+                "count": 0,
+                "signals": []
+            }
+        )
+    
     try:
         signals = get_active_signals(limit)
         return {
+            "status": "ok",
             "count": len(signals),
             "signals": signals
         }
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to fetch active signals: {str(e)}"
+        # Never crash - return empty list with error info
+        return JSONResponse(
+            status_code=200,
+            content={
+                "status": "error",
+                "message": f"Failed to fetch signals: {str(e)}",
+                "count": 0,
+                "signals": []
+            }
         )
 
 # =====================================================
