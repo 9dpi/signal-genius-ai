@@ -13,11 +13,10 @@ from telegram import Bot
 from telegram.error import TelegramError
 
 # Configuration
-API_ENDPOINT = os.getenv('API_ENDPOINT', 'https://signalgeniusai-production.up.railway.app/api/v1/lab/market-reference')
+API_ENDPOINT = os.getenv('API_ENDPOINT', 'https://signalgeniusai-production.up.railway.app/api/v1/signal/latest')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '8371104272:AAFlp0NA8wz-HEKOqtsbyGR1_m8C3pzZO2c')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID', '7985984228')
-SYMBOL = 'EURUSD'
-TIMEFRAME = 'M15'
+ASSET = 'EUR/USD'
 MIN_CONFIDENCE = 95
 
 # Track sent signals to avoid duplicates
@@ -29,7 +28,7 @@ async def fetch_signal() -> Optional[Dict]:
     """Fetch signal from API endpoint"""
     try:
         async with aiohttp.ClientSession() as session:
-            url = f"{API_ENDPOINT}?symbol={SYMBOL}&tf={TIMEFRAME}"
+            url = f"{API_ENDPOINT}?asset={ASSET}"
             async with session.get(url, timeout=10) as response:
                 if response.status == 200:
                     return await response.json()
@@ -184,7 +183,7 @@ async def check_and_send_signal():
 async def run_bot():
     """Run bot with periodic checks (every 15 minutes)"""
     print("🤖 Signal Genius AI Telegram Bot started")
-    print(f"📊 Monitoring: {SYMBOL} {TIMEFRAME}")
+    print(f"📊 Monitoring: {ASSET}")
     print(f"🎯 Min Confidence: {MIN_CONFIDENCE}%")
     print(f"📢 Max signals per day: 1 per asset")
     print(f"⏰ Check interval: 15 minutes\n")

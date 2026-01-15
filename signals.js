@@ -1,7 +1,6 @@
 const CONFIG = {
-  API_ENDPOINT: 'https://signalgeniusai-production.up.railway.app/api/v1/lab/market-reference',
-  REFRESH_INTERVAL: 30000, // 30 seconds
-  SYMBOL: 'EURUSD',
+  API_ENDPOINT: 'https://signalgeniusai-production.up.railway.app/api/v1/signal/latest',
+  SYMBOL: 'EUR/USD',
   TIMEFRAME: 'M15'
 };
 

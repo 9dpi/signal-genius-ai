@@ -64,12 +64,13 @@ def health_check():
 @app.get("/api/v1/signal/latest")
 def latest_signal(asset: str = Query("EUR/USD", description="Trading asset")):
     """
-    Get latest high-confidence signal for specified asset
+    Primary endpoint for high-confidence AI signals
     
-    - Calls Quantix AI Core
-    - Applies confidence threshold (≥95%)
-    - Returns cached signal if within TTL
-    - Saves to Supabase database
+    - Calls Quantix AI Core reference
+    - Validates data through Confidence Gate (≥95%)
+    - Caches snapshot (TTL = 15m)
+    - Logs to Supabase Data Layer
+    - Returns unified rich format
     """
     try:
         signal = get_latest_signal(asset)
@@ -130,10 +131,9 @@ def market_reference(
 ):
     """
     Legacy endpoint for backward compatibility
-    Maps to latest_signal endpoint
     """
-    # Convert EURUSD to EUR/USD format
-    asset = f"{symbol[:3]}/{symbol[3:]}" if len(symbol) == 6 else symbol
+    # Convert EURUSD to EUR/USD format if needed
+    asset = f"{symbol[:3]}/{symbol[3:]}" if len(symbol) == 6 and "/" not in symbol else symbol
     
     signal = get_latest_signal(asset)
     
@@ -146,33 +146,7 @@ def market_reference(
             }
         )
     
-    # Map to legacy format
-    return {
-        "asset": signal["asset"],
-        "direction": signal["trade"],
-        "direction_icon": "🟢" if signal["trade"] == "BUY" else "🔴",
-        "timeframe": tf,
-        "session": "London → New York Overlap",
-        "price_levels": {
-            "entry_zone": signal["entry"],
-            "take_profit": str(signal["tp"]),
-            "stop_loss": str(signal["sl"])
-        },
-        "trade_details": {
-            "target_pips": signal.get("target_pips", 35),
-            "risk_reward": signal.get("risk_reward", "1 : 1.40"),
-            "suggested_risk": "0.5% – 1%"
-        },
-        "trade_type": "Intraday",
-        "confidence": signal["confidence"],
-        "posted_at_utc": signal["posted_at"],
-        "expiry_rules": {
-            "session_only": True,
-            "expires_at": "NY_CLOSE",
-            "invalidate_if_missed_entry": True
-        },
-        "disclaimer": "Not financial advice. Trade responsibly."
-    }
+    return signal
 
 # =====================================================
 # Run Server
