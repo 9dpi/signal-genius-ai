@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from typing import Dict, Optional
 import logging
 
-from services.quantix_client import fetch_quantix_signal
+from backend.services.quantix_client import fetch_quantix_signal
 
 logger = logging.getLogger(__name__)
 

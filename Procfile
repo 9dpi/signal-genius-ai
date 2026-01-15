@@ -1,2 +1,2 @@
-web: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
-worker: cd telegram && python bot.py
+web: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+worker: python telegram/bot.py

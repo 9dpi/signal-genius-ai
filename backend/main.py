@@ -10,9 +10,9 @@ from typing import Optional
 import uvicorn
 
 # Import services
-from services.quantix_client import fetch_quantix_signal
-from services.signal_service import get_latest_signal
-from services.supabase_client import save_signal_to_db, get_active_signals
+from backend.services.quantix_client import fetch_quantix_signal
+from backend.services.signal_service import get_latest_signal
+from backend.services.supabase_client import save_signal_to_db, get_active_signals
 
 # Initialize FastAPI app
 app = FastAPI(
