@@ -44,13 +44,13 @@ function updateThemeIcon(theme, iconElement) {
 
 // Load signal data with Snapshot-First Strategy
 async function loadSignal() {
-  // 1️⃣ Render Cached Snapshot IMMEDIATELY
+  // 1️⃣ Default state is already SKELETON (rendered in HTML)
+  // We only check cache or fetch.
+
   const cached = localStorage.getItem('latest_signal');
   if (cached) {
     console.log('⚡ Rendered cached snapshot');
     renderSignal(JSON.parse(cached), true); // true = isCached
-  } else {
-    renderWaitingState();
   }
 
   // 2️⃣ Fetch Fresh Data in Background
@@ -58,23 +58,30 @@ async function loadSignal() {
     const signal = await fetchSignalData();
 
     if (signal) {
-      // 3️⃣ Update UI with fresh data if valid
       if (signal.confidence >= 95) {
-        renderSignal(signal, false); // false = isLive
+        // 3️⃣ Update UI with fresh data
+        renderSignal(signal, false); // false = isLive (Live Update)
         localStorage.setItem('latest_signal', JSON.stringify(signal));
       } else {
-        // If live signal is low confidence but we have a cache, 
-        // we might want to keep the cache or show waiting state.
-        // For now, let's respect the "Scanning" state if confidence drops.
-        renderWaitingState();
+        // Low confidence:
+        // If we have cache, we might want to keep showing cached data with "Using Snapshot" status,
+        // OR show "Scanning..." state. 
+        // Decision: Show "Scanning..." but maybe keep cache accessible?
+        // For simplicity and "No White Screen" rule:
+        // If we have cache, we keep cache but maybe update status to "market scanning".
+        // If NO cache, renderWaitingState.
+        if (!cached) {
+          renderWaitingState();
+        }
       }
     }
   } catch (error) {
     console.error('Background fetch failed:', error);
-    // If fetch fails, we just keep showing the cached snapshot if it exists.
-    // Optionally, we could show a subtle "Offline - Using Snapshot" toast here.
+    // 4️⃣ Fail handling: Keep snapshot if exists.
+    // Ensure we don't clear the screen.
   }
 }
+
 
 // Fetch signal data from Railway API
 async function fetchSignalData() {

@@ -458,6 +458,60 @@ body {
   }
 }
 
+/* Skeleton UI */
+.shimmer {
+  background: linear-gradient(90deg,
+      var(--bg-card) 25%,
+      var(--bg-secondary) 37%,
+      var(--bg-card) 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0
+  }
+
+  100% {
+    background-position: -100% 0
+  }
+}
+
+.sk-title {
+  height: 32px;
+  width: 40%;
+  margin-bottom: 12px;
+}
+
+.sk-line {
+  height: 16px;
+  border-radius: 4px;
+}
+
+.sk-badge {
+  height: 40px;
+  width: 120px;
+  border-radius: 99px;
+}
+
+.sk-grid {
+  margin-top: 2rem;
+}
+
+.sk-box {
+  height: 40px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+.sk-text {
+  opacity: .6;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
 .animate-in {
   animation: slideIn 0.5s ease-out;
 }

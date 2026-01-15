@@ -45,7 +45,41 @@
   <main class="container">
     <!-- Signal Container (Mobile First - Top Priority) -->
     <div id="signal-container">
-      <!-- Signal will be loaded here by JavaScript -->
+      <!-- Skeleton UI - Shown IMMEDIATELY on load -->
+      <div id="skeleton" class="bento-card signal-card">
+        <div class="sk-header" style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+          <div style="width: 50%;">
+            <div class="sk-title shimmer"></div>
+            <div class="sk-line shimmer" style="width: 80%;"></div>
+          </div>
+          <div class="sk-badge shimmer"></div>
+        </div>
+
+        <div class="sk-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+          <div>
+            <div class="sk-line shimmer" style="width: 60%; margin-bottom: 10px;"></div>
+            <div class="sk-box shimmer"></div>
+            <div class="sk-box shimmer"></div>
+            <div class="sk-box shimmer"></div>
+          </div>
+          <div>
+            <div class="sk-line shimmer" style="width: 60%; margin-bottom: 10px;"></div>
+            <div class="sk-box shimmer"></div>
+            <div class="sk-box shimmer"></div>
+            <div class="sk-box shimmer"></div>
+          </div>
+          <div>
+            <div class="sk-line shimmer" style="width: 60%; margin-bottom: 10px;"></div>
+            <div class="sk-box shimmer"></div>
+            <div class="sk-box shimmer"></div>
+            <div class="sk-box shimmer"></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: center;">
+          <p class="sk-text">🧠 Initializing AI snapshot...</p>
+        </div>
+      </div>
     </div>
 
     <!-- Stats Overview -->
