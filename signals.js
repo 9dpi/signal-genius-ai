@@ -63,22 +63,26 @@ async function loadSignal() {
         renderSignal(signal, false); // false = isLive (Live Update)
         localStorage.setItem('latest_signal', JSON.stringify(signal));
       } else {
-        // Low confidence:
-        // If we have cache, we might want to keep showing cached data with "Using Snapshot" status,
-        // OR show "Scanning..." state. 
-        // Decision: Show "Scanning..." but maybe keep cache accessible?
-        // For simplicity and "No White Screen" rule:
-        // If we have cache, we keep cache but maybe update status to "market scanning".
-        // If NO cache, renderWaitingState.
+        // Valid but low confidence signal.
+        // If we don't have a cache, show Waiting State.
         if (!cached) {
           renderWaitingState();
         }
       }
+    } else {
+      // Signal explicitly null (e.g. backend turned off signal generation)
+      if (!cached) {
+        renderWaitingState();
+      }
     }
   } catch (error) {
     console.error('Background fetch failed:', error);
-    // 4️⃣ Fail handling: Keep snapshot if exists.
-    // Ensure we don't clear the screen.
+    // 4️⃣ Fail handling: 
+    // If we have cache, we keep showing it (Snapshot mode).
+    // If NO cache, we must remove Skeleton and show Waiting/Error state.
+    if (!cached) {
+      renderWaitingState();
+    }
   }
 }
 
