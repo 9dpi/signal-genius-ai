@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * Payload - Data Fetching and Rendering
  * Single source of truth for signal data
@@ -28,3 +29,9 @@ setInterval(() => {
             // Silent fail on auto-refresh
         });
 }, 30000);
+=======
+function renderCard(data) {
+    document.getElementById("signal-card").innerText =
+        renderTelegramMessage(data);
+}
+>>>>>>> de67d7e0b5c7e2b6c648edaac0ac82a61fb55248
