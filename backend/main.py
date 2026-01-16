@@ -74,39 +74,29 @@ async def latest_signal(symbol: str = "EUR/USD", timeframe: str = "M15"):
             "payload": fallback_signal
         }
 
+@app.get("/api/v1/signals/history")
+async def signal_history(limit: int = 50):
+    """Public Signal History API."""
+    try:
+        limit = min(limit, 100)
+        signals = get_all_signals(limit=limit)
+        stats = calculate_stats()
+        return {
+            "status": "ok",
+            "stats": stats,
+            "signals": signals
+        }
+    except Exception as e:
+        print(f"❌ History error: {e}")
+        return {"status": "error", "message": "Could not retrieve history"}
 
 @app.get("/api/v1/stats")
 def get_stats():
-    """
-    Get performance statistics.
-    
-    Returns:
-        - Total signals
-        - Average confidence
-        - Breakdown by tier
-    """
+    """Get performance statistics."""
     stats = calculate_stats()
     return {
         "status": "ok",
         "stats": stats
-    }
-
-
-@app.get("/api/v1/signals/history")
-def get_history(limit: int = 50):
-    """
-    Get signal history (most recent first).
-    
-    Args:
-        limit: Number of signals to return (max 100)
-    """
-    limit = min(limit, 100)
-    signals = get_all_signals(limit=limit)
-    
-    return {
-        "status": "ok",
-        "count": len(signals),
-        "signals": signals
     }
 
 
@@ -294,6 +284,42 @@ LOW: {stats['by_tier'].get('LOW', {}).get('count', 0)} signals"""
                 print(f"❌ /stats error: {e}")
                 send_telegram_message(chat_id, "⚠️ Stats temporarily unavailable")
         
+        elif text == "/history":
+            try:
+                stats = calculate_stats()
+                # Get last 7 signals for a compact summary
+                history = get_all_signals(limit=7)
+                
+                outcome_emojis = {
+                    "HIT_TP": "🟢 WIN",
+                    "HIT_SL": "🔴 LOSS",
+                    "EXPIRED": "⚪ EXP",
+                    "ACTIVE": "⏳ ACT"
+                }
+                
+                history_lines = []
+                for s in history:
+                    date_short = s['created_at'][5:10] # MM-DD
+                    outcome = outcome_emojis.get(s['status'], "⚪")
+                    history_lines.append(f"<code>{date_short}</code> {s['direction']} | {outcome}")
+                
+                history_text = "\n".join(history_lines)
+                
+                msg = f"""<b>📊 Trading History (Last 7)</b>
+{history_text}
+
+<b>📈 Summary (All Time)</b>
+Win Rate: {stats['win_rate']}%
+Total Signals: {stats['total_signals']}
+
+🔗 <b>Full History:</b>
+<a href="https://9dpi.github.io/signal-genius-ai/history.html">View Detailed Ledger</a>"""
+                
+                send_telegram_message(chat_id, msg)
+            except Exception as e:
+                print(f"❌ /history error: {e}")
+                send_telegram_message(chat_id, "⚠️ History temporarily unavailable")
+        
         elif text == "/help":
             try:
                 send_telegram_message(
@@ -301,6 +327,7 @@ LOW: {stats['by_tier'].get('LOW', {}).get('count', 0)} signals"""
                     "<b>🤖 Signal Genius AI Bot</b>\n\n"
                     "<b>Commands:</b>\n"
                     "/signal - Get latest trading signal\n"
+                    "/history - View recent signal results\n"
                     "/stats - View performance statistics\n"
                     "/start - Show welcome message\n\n"
                     "⚠️ Signals are for educational purposes only."
