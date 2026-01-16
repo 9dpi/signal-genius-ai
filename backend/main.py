@@ -1,5 +1,6 @@
 import os
-from fastapi import FastAPI
+import requests
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 try:
     from external_client import fetch_candles
@@ -91,6 +92,130 @@ def get_history(limit: int = 50):
         "count": len(signals),
         "signals": signals
     }
+
+
+# ============================================
+# TELEGRAM BOT WEBHOOK
+# ============================================
+
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+
+def send_telegram_message(chat_id: int, text: str, parse_mode: str = "Markdown"):
+    """Send message to Telegram chat"""
+    if not BOT_TOKEN:
+        print("❌ TELEGRAM_BOT_TOKEN not set")
+        return False
+    
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    try:
+        response = requests.post(url, json={
+            "chat_id": chat_id,
+            "text": text,
+            "parse_mode": parse_mode
+        }, timeout=10)
+        response.raise_for_status()
+        return True
+    except Exception as e:
+        print(f"❌ Failed to send Telegram message: {e}")
+        return False
+
+
+@app.post("/telegram/webhook")
+async def telegram_webhook(request: Request):
+    """
+    Telegram Bot Webhook Handler
+    
+    Receives updates from Telegram and responds to commands.
+    """
+    try:
+        update = await request.json()
+        print(f"📥 Telegram Update: {update}")
+        
+        # Extract message
+        message = update.get("message")
+        if not message:
+            return {"ok": True}
+        
+        chat_id = message["chat"]["id"]
+        text = message.get("text", "")
+        
+        # Command handlers
+        if text == "/start":
+            send_telegram_message(
+                chat_id,
+                "🤖 *Signal Genius AI*\n\n"
+                "Bot đã hoạt động\\!\n\n"
+                "Commands:\n"
+                "/signal \\- Get latest signal\n"
+                "/stats \\- View performance\n"
+                "/help \\- Show this message",
+                parse_mode="MarkdownV2"
+            )
+        
+        elif text == "/signal":
+            # Fetch latest signal
+            try:
+                candles = await fetch_candles()
+                signal = generate_signal(candles)
+                
+                # Format signal message
+                p = signal
+                msg = f"""📊 *{p['symbol']}* \\| {p['timeframe']}
+{'🟢' if p['direction'] == 'BUY' else '🔴'} *{p['direction']}*
+
+🎯 Entry: {p['entry']}
+💰 TP: {p['tp']}
+🛑 SL: {p['sl']}
+
+⭐ Confidence: {p['confidence']}%
+🧠 Strategy: {p['strategy']}
+
+⚠️ _Not financial advice_"""
+                
+                send_telegram_message(chat_id, msg, parse_mode="MarkdownV2")
+                
+            except Exception as e:
+                send_telegram_message(
+                    chat_id,
+                    f"❌ Error fetching signal: {str(e)}"
+                )
+        
+        elif text == "/stats":
+            stats = calculate_stats()
+            msg = f"""📊 *Performance Statistics*
+
+Total Signals: {stats['total_signals']}
+Avg Confidence: {stats['avg_confidence']}%
+
+*By Tier:*
+HIGH: {stats['by_tier'].get('HIGH', {}).get('count', 0)} signals
+MEDIUM: {stats['by_tier'].get('MEDIUM', {}).get('count', 0)} signals
+LOW: {stats['by_tier'].get('LOW', {}).get('count', 0)} signals"""
+            
+            send_telegram_message(chat_id, msg)
+        
+        elif text == "/help":
+            send_telegram_message(
+                chat_id,
+                "🤖 *Signal Genius AI Bot*\n\n"
+                "*Commands:*\n"
+                "/signal - Get latest trading signal\n"
+                "/stats - View performance statistics\n"
+                "/start - Show welcome message\n\n"
+                "⚠️ Signals are for educational purposes only."
+            )
+        
+        else:
+            send_telegram_message(
+                chat_id,
+                "❓ Unknown command. Send /help for available commands."
+            )
+        
+        return {"ok": True}
+        
+    except Exception as e:
+        print(f"❌ Webhook error: {e}")
+        return {"ok": False, "error": str(e)}
 
 
 if __name__ == "__main__":
