@@ -6,10 +6,12 @@ try:
     from external_client import fetch_candles
     from signal_engine import generate_signal, generate_stabilizer_signal
     from signal_ledger import append_signal, calculate_stats, get_all_signals
+    from telegram_formatter import render_telegram_message
 except ImportError:
     from backend.external_client import fetch_candles
     from backend.signal_engine import generate_signal, generate_stabilizer_signal
     from backend.signal_ledger import append_signal, calculate_stats, get_all_signals
+    from backend.telegram_formatter import render_telegram_message
 
 app = FastAPI(title="Signal Genius AI MVP")
 
@@ -191,21 +193,8 @@ async def telegram_webhook(request: Request):
                 candles = await fetch_candles()
                 signal = generate_signal(candles)
                 
-                # Format signal message in HTML
-                p = signal
-                dir_emoji = "🟢" if p['direction'] == 'BUY' else "🔴"
-                msg = f"""<b>📊 {p['symbol']} | {p['timeframe']}</b>
-{dir_emoji} <b>{p['direction']}</b>
-
-🎯 Entry: {p['entry']}
-💰 TP: {p['tp']}
-🛑 SL: {p['sl']}
-
-⭐ Confidence: {p['confidence']}%
-🧠 Strategy: {p['strategy']}
-
-⚠️ <i>Not financial advice</i>"""
-                
+                # Use centralized formatter (HTML safe)
+                msg = render_telegram_message(signal)
                 send_telegram_message(chat_id, msg)
                 
             except Exception as e:

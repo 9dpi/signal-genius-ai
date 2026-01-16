@@ -61,6 +61,50 @@ def append_signal(signal_data: Dict) -> bool:
         return False
 
 
+def update_signal_status(signal_id: str, status: str, outcome_data: Dict = None) -> bool:
+    """
+    Update the status of an existing signal in the ledger.
+    
+    Args:
+        signal_id: ID of the signal to update
+        status: New status (HIT_TP, HIT_SL, EXPIRED)
+        outcome_data: Optional dict with pips, closed_at, etc.
+        
+    Returns:
+        bool: True if updated successfully
+    """
+    try:
+        ledger = load_ledger()
+        updated = False
+        
+        for signal in ledger:
+            if signal.get("signal_id") == signal_id:
+                signal["status"] = status
+                signal["closed_at"] = datetime.now(timezone.utc).isoformat()
+                if outcome_data:
+                    signal.update(outcome_data)
+                updated = True
+                break
+        
+        if updated:
+            save_ledger(ledger)
+            print(f"✅ Signal {signal_id} updated to {status}")
+            return True
+        else:
+            print(f"⚠️ Signal {signal_id} not found in ledger")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Failed to update signal: {e}")
+        return False
+
+
+def get_active_signals() -> List[Dict]:
+    """Get all signals with status 'ACTIVE'"""
+    ledger = load_ledger()
+    return [s for s in ledger if s.get("status") == "ACTIVE"]
+
+
 def load_ledger() -> List[Dict]:
     """Load signal ledger from file"""
     if not os.path.exists(LEDGER_FILE):
@@ -117,6 +161,10 @@ def calculate_stats() -> Dict:
     
     # Basic stats
     total = len(ledger)
+    closed = [s for s in ledger if s.get("status") in ["HIT_TP", "HIT_SL", "EXPIRED"]]
+    wins = [s for s in ledger if s.get("status") == "HIT_TP"]
+    
+    win_rate = (len(wins) / len(closed) * 100) if closed else 0
     
     # Confidence distribution
     confidences = [s.get("confidence", 0) for s in ledger]
@@ -135,13 +183,20 @@ def calculate_stats() -> Dict:
     
     tier_stats = {}
     for tier, signals in tiers.items():
+        tier_signals = signals
+        tier_closed = [s for s in tier_signals if s.get("status") in ["HIT_TP", "HIT_SL", "EXPIRED"]]
+        tier_wins = [s for s in tier_signals if s.get("status") == "HIT_TP"]
+        
         tier_stats[tier] = {
-            "count": len(signals),
-            "avg_confidence": sum(s.get("confidence", 0) for s in signals) / len(signals) if signals else 0
+            "count": len(tier_signals),
+            "win_rate": round(len(tier_wins) / len(tier_closed) * 100, 1) if tier_closed else 0,
+            "avg_confidence": round(sum(s.get("confidence", 0) for s in tier_signals) / len(tier_signals), 1) if tier_signals else 0
         }
     
     return {
         "total_signals": total,
+        "total_closed": len(closed),
+        "win_rate": round(win_rate, 1),
         "avg_confidence": round(avg_confidence, 1),
         "by_tier": tier_stats,
         "last_updated": datetime.now(timezone.utc).isoformat()
