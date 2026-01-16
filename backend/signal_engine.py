@@ -1,6 +1,42 @@
 from datetime import datetime, timezone, timedelta
 import random
 
+def classify_confidence(confidence: int) -> dict:
+    """
+    Classify confidence into tiers for Web and Telegram.
+    
+    Tiers:
+    - HIGH (>= 85%): Premium signals for Telegram
+    - MEDIUM (60-84%): Web only, caution advised
+    - LOW (< 60%): Web only, informational
+    
+    Returns:
+        dict: Tier metadata with telegram eligibility
+    """
+    if confidence >= 85:
+        return {
+            "tier": "HIGH",
+            "label": "⭐ High Confidence",
+            "telegram": True,
+            "color": "#16a34a",
+            "icon": "🟢"
+        }
+    if confidence >= 60:
+        return {
+            "tier": "MEDIUM",
+            "label": "🧠 Medium Confidence",
+            "telegram": False,
+            "color": "#f59e0b",
+            "icon": "🟡"
+        }
+    return {
+        "tier": "LOW",
+        "label": "⚠️ Low Confidence",
+        "telegram": False,
+        "color": "#dc2626",
+        "icon": "🔴"
+    }
+
 def calc_ema(values, period):
     if not values or len(values) < period:
         return values[-1] if values else 0
@@ -54,6 +90,9 @@ def generate_stabilizer_signal(current_price, direction="BUY", reason="Market St
     
     confidence = random.randint(55, 62) # Điểm số "Trung bình/Thấp" nhưng chấp nhận được
     expiry = datetime.now(timezone.utc) + timedelta(minutes=15)
+    
+    # Classify confidence tier
+    confidence_meta = classify_confidence(confidence)
 
     return {
         "valid": True,
@@ -66,6 +105,7 @@ def generate_stabilizer_signal(current_price, direction="BUY", reason="Market St
         "sl": sl,
         "confidence": confidence,
         "confidence_level": "LOW" if confidence < 60 else "MEDIUM",
+        "confidence_meta": confidence_meta,  # Added tier metadata
         "strategy": "Stabilizer (Trend Follow)",
         "session": "Global",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -127,6 +167,9 @@ def generate_signal(candles, timeframe="M15"):
 
     expiry = datetime.now(timezone.utc) + timedelta(minutes=30)
     conf_level = "HIGH" if confidence >= 85 else "MEDIUM" if confidence >= 65 else "LOW"
+    
+    # Classify confidence tier
+    confidence_meta = classify_confidence(confidence)
 
     return {
         "valid": True,
@@ -139,6 +182,7 @@ def generate_signal(candles, timeframe="M15"):
         "sl": sl,
         "confidence": confidence,
         "confidence_level": conf_level,
+        "confidence_meta": confidence_meta,  # Added tier metadata
         "strategy": "EMA Trend + RSI + ATR",
         "session": "Active",
         "generated_at": datetime.now(timezone.utc).isoformat(),
