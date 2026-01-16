@@ -79,6 +79,20 @@ def format_vip_message(payload: dict) -> str:
     confidence = payload.get("confidence", 0)
     timeframe = payload.get("timeframe", "M15")
     strategy = payload.get("strategy", "Rule Engine")
+    signal_id = payload.get("signal_id", "N/A")
+    
+    # Get expiry info
+    expiry_obj = payload.get("expiry", {})
+    if expiry_obj and expiry_obj.get("type") == "time":
+        from datetime import datetime
+        expiry_str = expiry_obj.get("expires_at", "")
+        try:
+            expiry_dt = datetime.fromisoformat(expiry_str.replace("Z", "+00:00"))
+            expiry_display = expiry_dt.strftime("%H:%M UTC")
+        except:
+            expiry_display = "N/A"
+    else:
+        expiry_display = "N/A"
     
     # Handle entry as array or single value
     if isinstance(entry, list):
@@ -98,7 +112,8 @@ def format_vip_message(payload: dict) -> str:
     
     return f"""🚨 *TRADE SIGNAL – HIGH CONFIDENCE*
 
-📊 *{escape_md(asset)}*
+🆔 Signal ID: `{signal_id}`
+📊 *{escape_md(asset)}* \\({timeframe}\\)
 {dir_emoji} Action: {direction}
 🎯 Entry: {entry_text}
 🎯 TP: {tp}
@@ -106,7 +121,7 @@ def format_vip_message(payload: dict) -> str:
 
 ⭐ Confidence: {confidence}% \\(HIGH\\)
 🧠 Strategy: {escape_md(strategy)}
-⏰ Timeframe: {timeframe}
+⏰ Expires at: {expiry_display}
 
 ⚠️ Risk: {risk}
 📌 Manage position size carefully

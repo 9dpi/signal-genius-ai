@@ -1,6 +1,32 @@
 from datetime import datetime, timezone, timedelta
 import random
 
+def generate_signal_id(symbol: str, timestamp: datetime = None) -> str:
+    """
+    Generate unique signal ID.
+    
+    Format: SIG-{SYMBOL}-{YYYYMMDD}-{HHMM}
+    Example: SIG-EURUSD-20260116-1530
+    
+    Args:
+        symbol: Trading pair (e.g., "EUR/USD")
+        timestamp: Signal generation time (defaults to now)
+        
+    Returns:
+        str: Unique signal ID
+    """
+    if timestamp is None:
+        timestamp = datetime.now(timezone.utc)
+    
+    # Clean symbol (remove special chars)
+    clean_symbol = symbol.replace("/", "").replace("-", "")
+    
+    # Format: SIG-EURUSD-20260116-1530
+    date_str = timestamp.strftime("%Y%m%d")
+    time_str = timestamp.strftime("%H%M")
+    
+    return f"SIG-{clean_symbol}-{date_str}-{time_str}"
+
 def classify_confidence(confidence: int) -> dict:
     """
     Classify confidence into tiers for Web and Telegram.
@@ -89,12 +115,17 @@ def generate_stabilizer_signal(current_price, direction="BUY", reason="Market St
     sl = round(entry - (atr * 1.0) if direction == "BUY" else entry + (atr * 1.0), 5)
     
     confidence = random.randint(55, 62) # Điểm số "Trung bình/Thấp" nhưng chấp nhận được
-    expiry = datetime.now(timezone.utc) + timedelta(minutes=15)
+    now = datetime.now(timezone.utc)
+    expiry_time = now + timedelta(minutes=15)
     
     # Classify confidence tier
     confidence_meta = classify_confidence(confidence)
+    
+    # Generate unique signal ID
+    signal_id = generate_signal_id("EUR/USD", now)
 
     return {
+        "signal_id": signal_id,
         "valid": True,
         "symbol": "EUR/USD",
         "asset": "EUR/USD",
@@ -105,13 +136,18 @@ def generate_stabilizer_signal(current_price, direction="BUY", reason="Market St
         "sl": sl,
         "confidence": confidence,
         "confidence_level": "LOW" if confidence < 60 else "MEDIUM",
-        "confidence_meta": confidence_meta,  # Added tier metadata
+        "confidence_meta": confidence_meta,
         "strategy": "Stabilizer (Trend Follow)",
         "session": "Global",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "expires_at": expiry.isoformat(),
-        "source": "stabilizer",   # Đánh dấu fallback
-        "market": "real"          # Vẫn là giá thật!
+        "generated_at": now.isoformat(),
+        "expiry": {
+            "type": "time",
+            "expires_at": expiry_time.isoformat()
+        },
+        "expires_at": expiry_time.isoformat(),  # Backward compatibility
+        "status": "ACTIVE",
+        "source": "stabilizer",
+        "market": "real"
     }
 
 def generate_signal(candles, timeframe="M15"):
@@ -165,13 +201,18 @@ def generate_signal(candles, timeframe="M15"):
     tp = round(entry + dist_tp if direction == "BUY" else entry - dist_tp, 5)
     sl = round(entry - dist_sl if direction == "BUY" else entry + dist_sl, 5)
 
-    expiry = datetime.now(timezone.utc) + timedelta(minutes=30)
+    now = datetime.now(timezone.utc)
+    expiry_time = now + timedelta(minutes=30)
     conf_level = "HIGH" if confidence >= 85 else "MEDIUM" if confidence >= 65 else "LOW"
     
     # Classify confidence tier
     confidence_meta = classify_confidence(confidence)
+    
+    # Generate unique signal ID
+    signal_id = generate_signal_id("EUR/USD", now)
 
     return {
+        "signal_id": signal_id,
         "valid": True,
         "symbol": "EUR/USD",
         "asset": "EUR/USD",
@@ -182,11 +223,16 @@ def generate_signal(candles, timeframe="M15"):
         "sl": sl,
         "confidence": confidence,
         "confidence_level": conf_level,
-        "confidence_meta": confidence_meta,  # Added tier metadata
+        "confidence_meta": confidence_meta,
         "strategy": "EMA Trend + RSI + ATR",
         "session": "Active",
-        "generated_at": datetime.now(timezone.utc).isoformat(),
-        "expires_at": expiry.isoformat(),
+        "generated_at": now.isoformat(),
+        "expiry": {
+            "type": "time",
+            "expires_at": expiry_time.isoformat()
+        },
+        "expires_at": expiry_time.isoformat(),  # Backward compatibility
+        "status": "ACTIVE",
         "source": "rule-engine",
         "market": "real"
     }
