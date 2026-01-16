@@ -31,13 +31,11 @@ body {
   overflow: hidden;
 }
 
-/* 9:16 App Container (Clean, No Device Frame) */
+/* 9:16 App Container (Transparent, Clean) */
 .app-container {
   width: 100%;
   max-width: 420px;
-  min-height: 100vh;
   margin: 0 auto;
-  background: radial-gradient(circle at top right, #1e293b, #05070a);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -283,8 +281,7 @@ header {
 
 /* History CTA */
 .history-cta {
-  margin-top: auto;
-  padding: 20px 0;
+  padding: 10px 0 20px 0;
   text-align: center;
 }
 
