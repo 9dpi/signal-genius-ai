@@ -100,21 +100,51 @@ def get_history(limit: int = 50):
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 
-def send_telegram_message(chat_id: int, text: str, parse_mode: str = "Markdown"):
-    """Send message to Telegram chat"""
+def send_telegram_message(chat_id: int, text: str, parse_mode: str = "HTML"):
+    """
+    Send message to Telegram chat.
+    
+    Args:
+        chat_id: Telegram chat ID
+        text: Message text
+        parse_mode: HTML (default) or Markdown
+        
+    Returns:
+        bool: True if sent successfully
+    """
+    # Validate inputs
     if not BOT_TOKEN:
         print("❌ TELEGRAM_BOT_TOKEN not set")
         return False
     
+    if not chat_id:
+        print("❌ Invalid chat_id")
+        return False
+    
+    if not text or not str(text).strip():
+        print("❌ Empty message text")
+        return False
+    
+    # Ensure text is string and limit length
+    text = str(text).strip()[:4000]
+    
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": parse_mode
+    }
+    
     try:
-        response = requests.post(url, json={
-            "chat_id": chat_id,
-            "text": text,
-            "parse_mode": parse_mode
-        }, timeout=10)
+        print(f"📤 Sending to chat_id={chat_id}, length={len(text)}, mode={parse_mode}")
+        response = requests.post(url, json=payload, timeout=10)
         response.raise_for_status()
+        print(f"✅ Message sent successfully")
         return True
+    except requests.exceptions.HTTPError as e:
+        print(f"❌ HTTP Error: {e}")
+        print(f"   Response: {e.response.text if e.response else 'No response'}")
+        return False
     except Exception as e:
         print(f"❌ Failed to send Telegram message: {e}")
         return False
@@ -144,13 +174,12 @@ async def telegram_webhook(request: Request):
             try:
                 send_telegram_message(
                     chat_id,
-                    "🤖 *Signal Genius AI*\n\n"
-                    "Bot đã hoạt động\\!\n\n"
-                    "Commands:\n"
-                    "/signal \\- Get latest signal\n"
-                    "/stats \\- View performance\n"
-                    "/help \\- Show this message",
-                    parse_mode="MarkdownV2"
+                    "<b>🤖 Signal Genius AI</b>\n\n"
+                    "Bot đã hoạt động!\n\n"
+                    "<b>Commands:</b>\n"
+                    "/signal - Get latest signal\n"
+                    "/stats - View performance\n"
+                    "/help - Show this message"
                 )
             except Exception as e:
                 print(f"❌ /start error: {e}")
@@ -162,10 +191,11 @@ async def telegram_webhook(request: Request):
                 candles = await fetch_candles()
                 signal = generate_signal(candles)
                 
-                # Format signal message
+                # Format signal message in HTML
                 p = signal
-                msg = f"""📊 *{p['symbol']}* \\| {p['timeframe']}
-{'🟢' if p['direction'] == 'BUY' else '🔴'} *{p['direction']}*
+                dir_emoji = "🟢" if p['direction'] == 'BUY' else "🔴"
+                msg = f"""<b>📊 {p['symbol']} | {p['timeframe']}</b>
+{dir_emoji} <b>{p['direction']}</b>
 
 🎯 Entry: {p['entry']}
 💰 TP: {p['tp']}
@@ -174,9 +204,9 @@ async def telegram_webhook(request: Request):
 ⭐ Confidence: {p['confidence']}%
 🧠 Strategy: {p['strategy']}
 
-⚠️ _Not financial advice_"""
+⚠️ <i>Not financial advice</i>"""
                 
-                send_telegram_message(chat_id, msg, parse_mode="MarkdownV2")
+                send_telegram_message(chat_id, msg)
                 
             except Exception as e:
                 print(f"❌ /signal error: {e}")
@@ -188,12 +218,12 @@ async def telegram_webhook(request: Request):
         elif text == "/stats":
             try:
                 stats = calculate_stats()
-                msg = f"""📊 *Performance Statistics*
+                msg = f"""<b>📊 Performance Statistics</b>
 
 Total Signals: {stats['total_signals']}
 Avg Confidence: {stats['avg_confidence']}%
 
-*By Tier:*
+<b>By Tier:</b>
 HIGH: {stats['by_tier'].get('HIGH', {}).get('count', 0)} signals
 MEDIUM: {stats['by_tier'].get('MEDIUM', {}).get('count', 0)} signals
 LOW: {stats['by_tier'].get('LOW', {}).get('count', 0)} signals"""
@@ -207,8 +237,8 @@ LOW: {stats['by_tier'].get('LOW', {}).get('count', 0)} signals"""
             try:
                 send_telegram_message(
                     chat_id,
-                    "🤖 *Signal Genius AI Bot*\n\n"
-                    "*Commands:*\n"
+                    "<b>🤖 Signal Genius AI Bot</b>\n\n"
+                    "<b>Commands:</b>\n"
                     "/signal - Get latest trading signal\n"
                     "/stats - View performance statistics\n"
                     "/start - Show welcome message\n\n"
