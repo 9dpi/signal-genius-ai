@@ -23,18 +23,19 @@ async function loadHistory() {
         <div class="stat-label">Win Rate</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">${stats.total_signals}</div>
+        <div class="stat-value">${stats.total}</div>
         <div class="stat-label">Total Signals</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">${stats.avg_confidence}%</div>
-        <div class="stat-label">Avg Conf</div>
+        <div class="stat-value">${stats.avg_pips}</div>
+        <div class="stat-label">Avg Pips</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">${stats.total_closed}</div>
-        <div class="stat-label">Closed Trades</div>
+        <div class="stat-value">${stats.win}/${stats.loss}</div>
+        <div class="stat-label">Win/Loss</div>
       </div>
     `;
+
 
     // 2. Render Table
     historyBody.innerHTML = data.signals.map(s => {
@@ -44,18 +45,21 @@ async function loadHistory() {
       });
 
       const outcomeClass = {
-        "HIT_TP": "outcome-win",
-        "HIT_SL": "outcome-loss",
+        "TP_HIT": "outcome-win",
+        "SL_HIT": "outcome-loss",
         "EXPIRED": "outcome-exp",
-        "ACTIVE": "outcome-act"
+        "OPEN": "outcome-act",
+        "CREATED": "outcome-act"
       }[s.status] || "";
 
       const outcomeText = {
-        "HIT_TP": "🟢 WIN",
-        "HIT_SL": "🔴 LOSS",
+        "TP_HIT": "🟢 WIN",
+        "SL_HIT": "🔴 LOSS",
         "EXPIRED": "⚪ EXPIRED",
-        "ACTIVE": "⏳ ACTIVE"
+        "OPEN": "⏳ OPEN",
+        "CREATED": "🕒 CREATED"
       }[s.status] || s.status;
+
 
       return `
         <tr>

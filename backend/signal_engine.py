@@ -131,14 +131,17 @@ def generate_signal(candles, timeframe="M15"):
         "mode": "NORMAL",
         "signal_id": generate_signal_id(SYMBOL_DEFAULT, now),
         "symbol": SYMBOL_DEFAULT,
-        "asset": SYMBOL_DEFAULT,
         "timeframe": timeframe,
         "direction": direction,
-        "entry": [entry],
+        "entry": entry,
         "tp": tp,
         "sl": sl,
+        "status_life": "OPEN", # Default to OPEN for market execution
         "confidence": confidence,
-        "confidence_meta": classify_confidence(confidence),
+        "strategy": "EMA Trend + RSI + ATR",
+        "generated_at": now.isoformat(),
+        "expires_at": expires_at.isoformat(),
+        # Internal meta for backward compatibility or display
         "volatility": {
             "atr": round(atr, 5),
             "atr_percent": atr_pct,
@@ -146,15 +149,8 @@ def generate_signal(candles, timeframe="M15"):
         },
         "expiry": {
             "minutes": expiry_info["minutes"],
-            "label": expiry_info["label"],
-            "expires_at": expires_at.isoformat()
-        },
-        "strategy": "EMA Trend + RSI + ATR",
-        "session": "Active Market",
-        "generated_at": now.isoformat(),
-        "expires_at": expires_at.isoformat(),
-        "status_life": "ACTIVE",
-        "source": "rule-engine"
+            "label": expiry_info["label"]
+        }
     }
 
 def generate_stabilizer_signal(price, timeframe="M15", reason="Market Stabilizer"):
@@ -170,24 +166,16 @@ def generate_stabilizer_signal(price, timeframe="M15", reason="Market Stabilizer
         "mode": "STABILIZER",
         "signal_id": generate_signal_id(SYMBOL_DEFAULT, now),
         "symbol": SYMBOL_DEFAULT,
-        "asset": SYMBOL_DEFAULT,
         "timeframe": timeframe,
         "direction": "BUY",
-        "entry": [entry],
+        "entry": entry,
         "tp": round(entry + atr_mock, 5),
         "sl": round(entry - atr_mock, 5),
+        "status_life": "OPEN",
         "confidence": 55,
-        "confidence_meta": classify_confidence(55),
-        "volatility": {"atr": atr_mock, "atr_percent": 0.12, "state": "stabilized"},
-        "expiry": {
-            "minutes": expiry_info["minutes"] * 2,
-            "label": "Extended Window",
-            "expires_at": expires_at.isoformat()
-        },
         "strategy": "Trend Follow (Stabilizer)",
-        "warning": reason,
         "generated_at": now.isoformat(),
         "expires_at": expires_at.isoformat(),
-        "status_life": "ACTIVE",
-        "source": "stabilizer"
+        "warning": reason
     }
+

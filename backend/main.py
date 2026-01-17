@@ -35,18 +35,11 @@ async def latest_signal(symbol: str = "EUR/USD", timeframe: str = "M15"):
         # 1. Check Daily Cache
         cached = get_cached_daily_signal(symbol, timeframe)
         if cached:
-            # Mark as replay
-            if "meta" not in cached: cached["meta"] = {}
-            cached["meta"]["status"] = "replay"
             return {"status": "ok", "payload": cached}
 
         # 2. Try Real Fetch (Fresh)
         candles = await fetch_candles(symbol=symbol)
         signal = generate_signal(candles, timeframe=timeframe)
-        
-        # Mark as fresh
-        if "meta" not in signal: signal["meta"] = {}
-        signal["meta"]["status"] = "fresh"
         
         # 3. Save to Cache
         save_daily_signal(symbol, timeframe, signal)
@@ -92,13 +85,14 @@ async def signal_history(limit: int = 50):
         return {"status": "error", "message": "Could not retrieve history"}
 
 @app.get("/api/v1/stats")
-def get_stats():
+async def get_stats():
     """Get performance statistics."""
     stats = calculate_stats()
     return {
         "status": "ok",
         "stats": stats
     }
+
 
 
 # ============================================

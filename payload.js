@@ -1,29 +1,20 @@
 /**
  * Payload - Data Fetching and Orchestration
- * Single source of truth for signal data
  */
 
-import { renderCard, renderTelegramMessage } from "./signals.js";
+import { renderCard } from "./signals.js";
 
-const API_URL = "https://signalgeniusai-production.up.railway.app/api/v1/signal/latest";
+const LATEST_API = "/api/v1/signal/latest";
 
 function updateUI(data) {
     const root = document.getElementById("signal-card");
     if (!root) return;
-
-    // Render as HTML card for web
     root.innerHTML = renderCard(data);
-
-    // Also log Telegram message to console (ready for bot)
-    if (data && data.status === "ok") {
-        console.log("📱 Telegram Preview:\n" + renderTelegramMessage(data));
-    }
 }
 
-// Initial fetch
 async function fetchLatestSignal() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(LATEST_API);
         const data = await response.json();
         updateUI(data);
     } catch (err) {
@@ -33,7 +24,8 @@ async function fetchLatestSignal() {
 }
 
 // Initial load
-fetchLatestSignal();
+fetchAndRefresh();
 
-// Auto-refresh every 30 seconds
-setInterval(fetchLatestSignal, 30000);
+// Auto-refresh every 15 seconds for live tracking feel
+setInterval(fetchAndRefresh, 15000);
+

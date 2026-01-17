@@ -1,7 +1,28 @@
 /**
- * Signals Formatter - Trader-grade Logic
- * Shared formatter for Web and Telegram
+ * Signals Formatter - Product-Grade Card UI
  */
+
+export function renderStats(stats) {
+  if (!stats) return "";
+  return `
+    <div class="stat-item">
+      <div class="label">Win Rate</div>
+      <div class="val" style="color: var(--success)">${stats.win_rate}%</div>
+    </div>
+    <div class="stat-item">
+      <div class="label">Pips</div>
+      <div class="val" style="color: var(--primary-accent)">${stats.avg_pips > 0 ? '+' : ''}${stats.avg_pips}</div>
+    </div>
+    <div class="stat-item">
+      <div class="label">Wins</div>
+      <div class="val">${stats.win}</div>
+    </div>
+    <div class="stat-item">
+      <div class="label">Losses</div>
+      <div class="val">${stats.loss}</div>
+    </div>
+  `;
+}
 
 export function getConfidenceMeta(confidence) {
   if (confidence >= 75) {
@@ -35,7 +56,7 @@ export function getConfidenceMeta(confidence) {
     label: "NO TRADE",
     class: "confidence-low",
     color: "#dc2626",
-    icon: "�",
+    icon: "🔴",
     warning: "Risky market conditions. No trade recommended."
   }
 }
@@ -55,106 +76,68 @@ export function renderCard(data) {
 
   const p = data.payload;
   const meta = getConfidenceMeta(p.confidence);
-
-  // Expiry calculation
-  const expiryMinutes = p.expiry?.minutes || 30;
-  const expiryPercent = calcExpiryPercent(p.generated_at, expiryMinutes);
-  const timeLeft = Math.max(0, Math.round(expiryMinutes * (1 - expiryPercent / 100)));
-
-  // Handle entry as single value or array
-  const entryDisplay = Array.isArray(p.entry) ? p.entry.join(' – ') : p.entry;
-  const expiryPercent_for_html = calcExpiryPercent(p.generated_at, p.expiry?.minutes || 45);
+  const expiryPercent = calcExpiryPercent(p.generated_at, p.expiry?.minutes || 45);
+  const isStabilizer = p.strategy === "Stabilizer" || p.signal_id?.includes("STAB");
 
   return `
-  <div class="signal-card">
-    <div class="signal-header">
-      <h2>${p.symbol || p.asset}</h2>
-      <span>${p.mode || 'NORMAL'}</span>
-    </div>
-
-    <div class="signal-direction ${p.direction === 'BUY' ? 'buy' : 'sell'}">
-      ${p.direction === 'BUY' ? '🟢 BUY' : '🔴 SELL'}
-    </div>
-
-    <div class="confidence-badge ${meta.class}">
-      ${meta.icon} ${p.confidence}% ${meta.label}
-    </div>
-
-    ${p.meta?.status === 'replay' ? `
-      <div class="badge-replay">
-        🔁 Today's Signal (Replay)
+    <div class="signal-card">
+      <div class="signal-header">
+        <h2 style="font-weight: 700; color: #fff; font-size: 20px;">${p.symbol}</h2>
+        <span class="status-label">${isStabilizer ? 'STABILIZER' : 'CORE ENGINE'}</span>
       </div>
-    ` : ''}
 
-    ${meta.warning ? `<div class="warning">⚠️ ${meta.warning}</div>` : ""}
+      <div class="signal-direction ${p.direction === 'BUY' ? 'buy' : 'sell'}" style="margin-top: 10px;">
+        ${p.direction === 'BUY' ? '🟢 BUY' : '🔴 SELL'}
+      </div>
 
-    <div class="detail-grid">
-      <div class="detail-box">
-        <label>Entry</label>
-        <span>${entryDisplay}</span>
+      <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+        <div class="confidence-badge ${meta.class}" style="margin-bottom: 0; padding: 6px 12px; font-size: 12px;">
+          ${meta.icon} ${p.confidence}% ${meta.label}
+        </div>
+        <div class="status-label" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); padding: 6px 12px; font-size: 10px;">
+          📅 TODAY'S SIGNAL (LIVE)
+        </div>
       </div>
-      <div class="detail-box">
-        <label>Timeframe</label>
-        <span>${p.timeframe}</span>
-      </div>
-      <div class="detail-box">
-        <label>Take Profit</label>
-        <span class="success">${p.tp}</span>
-      </div>
-      <div class="detail-box">
-        <label>Stop Loss</label>
-        <span class="danger">${p.sl}</span>
-      </div>
-    </div>
 
-    <div class="expiry-container">
-      <div class="expiry-label">
-        <span>Validity</span>
-        <span>${p.expiry?.label || '45 min'}</span>
-      </div>
-      <div class="expiry-bar">
-        <div class="expiry-progress" style="width: ${expiryPercent_for_html}%"></div>
-      </div>
-    </div>
+      ${meta.warning ? `<div class="warning">⚠️ ${meta.warning}</div>` : ""}
 
-    <div class="signal-meta-note">
-      Updated every 30s • Valid for current session
-    </div>
-
-    <div class="signal-footer">
-      <div class="signal-id">
-        ID: <code>${p.signal_id || 'N/A'}</code>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <label>Entry</label>
+          <span>${p.entry}</span>
+        </div>
+        <div class="detail-box">
+          <label>Timeframe</label>
+          <span>${p.timeframe}</span>
+        </div>
+        <div class="detail-box">
+          <label>Take Profit</label>
+          <span class="success">${p.tp}</span>
+        </div>
+        <div class="detail-box">
+          <label>Stop Loss</label>
+          <span class="danger">${p.sl}</span>
+        </div>
       </div>
-      <div class="signal-volatility">
-        VOL: <span>${p.volatility?.atr_percent || '0.00'}%</span>
+
+      <div class="expiry-container">
+        <div class="expiry-label">
+          <span style="font-size: 11px;">VALIDITY</span>
+          <span style="font-size: 11px;">EXTENDED WINDOW</span>
+        </div>
+        <div class="expiry-bar">
+          <div class="expiry-progress" style="width: ${expiryPercent}%"></div>
+        </div>
+        <div style="text-align: center; font-size: 10px; color: var(--text-muted); margin-top: 12px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 10px;">
+            Updated every 30s • Valid for current session
+        </div>
+      </div>
+
+      <div class="signal-footer" style="margin-top: 20px; font-size: 10px; opacity: 0.6; display: flex; justify-content: space-between;">
+        <span>ID: <b>${p.signal_id || 'N/A'}</b></span>
+        <span>VOL: <b>0.12%</b></span>
       </div>
     </div>
-  </div>
   `;
 }
 
-/**
- * Telegram Message Formatter (Legacy - keeping for internal use)
- */
-export function renderTelegramMessage(data) {
-  if (!data || data.status !== "ok" || !data.payload) {
-    return "⚠️ *Signal unavailable*";
-  }
-
-  const p = data.payload;
-  const confidence = p.confidence ?? "50";
-
-  // Escape for Telegram Markdown v2
-  const escape = (text) => String(text).replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
-  const directionEmoji = p.direction === "BUY" ? "🟢 BUY" : "🔴 SELL";
-  const asset = p.symbol || p.asset || "EUR/USD";
-
-  return `
-<b>📊 ${escape(asset)} | ${escape(p.timeframe)}</b>
-${directionEmoji} (Confidence: <b>${confidence}%</b>)
-
-🎯 Entry: ${escape(p.entry[0])}
-🎯 TP: ${escape(p.tp)}
-🛑 SL: ${escape(p.sl)}
-`.trim();
-}
