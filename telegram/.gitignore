@@ -1,0 +1,4 @@
+# Telegram Bot - Do not commit credentials
+.env
+*.pyc
+__pycache__/
