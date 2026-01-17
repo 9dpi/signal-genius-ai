@@ -117,7 +117,7 @@ export function renderCard(data) {
       </div>
     </div>
 
-    <div class="meta" style="margin-top: 16px; font-size: 11px; color: var(--text-muted); text-align: center; border-radius: 8px; background: rgba(255,255,255,0.02); padding: 8px;">
+    <div class="signal-meta-note">
       Updated every 30s • Valid for current session
     </div>
 
