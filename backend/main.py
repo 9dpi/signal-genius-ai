@@ -20,14 +20,24 @@ app = FastAPI(title="Signal Genius AI MVP")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://9dpi.github.io",
+        "http://localhost:8080",
+        "http://localhost:3000"
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+import logging
+
+# Configure Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("quantix-api")
+
+# Check Environment
+logger.info(f"TWELVE_DATA_API_KEY Configured: {bool(os.getenv('TWELVE_DATA_API_KEY'))}")
 
 @app.get("/api/v1/signal/latest")
 async def latest_signal(symbol: str = "EUR/USD", timeframe: str = "M15"):
@@ -53,19 +63,21 @@ async def latest_signal(symbol: str = "EUR/USD", timeframe: str = "M15"):
         }
         
     except Exception as e:
-        print(f"⚠️ Error fetching/generating signal: {e}")
+        logger.error(f"📡 API Engine Error: {e}")
         
-        # EMERGENCY FALLBACK
+        # EMERGENCY FALLBACK - NEVER RETURN 5XX
         fallback_price = 1.0850 
         fallback_signal = generate_stabilizer_signal(
             fallback_price, 
             timeframe=timeframe,
-            reason="Emergency Fallback"
+            reason=f"System Fallback: {str(e)[:50]}"
         )
         
         return {
             "status": "ok",
-            "payload": fallback_signal
+            "mode": "emergency_fallback",
+            "payload": fallback_signal,
+            "engine": "stabilizer"
         }
 
 @app.get("/api/v1/signals/history")
