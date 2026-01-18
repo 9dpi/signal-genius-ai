@@ -1,4 +1,4 @@
-import { renderHistoryRow } from "./signals.js";
+import { renderHistoryCard, getSignalStatus } from "./signals.js";
 
 const API_BASE = "https://signalgeniusai-production.up.railway.app";
 const LATEST_API = `${API_BASE}/signal/latest`;
@@ -24,48 +24,57 @@ async function loadSignal() {
 }
 
 function updateFeaturedCard(data) {
-    // Direct ID updates
-    document.getElementById("asset").innerText = data.asset || "EUR/USD";
+    // Top Section
+    const now = new Date(data.timestamp || Date.now());
+    document.getElementById("card-date").innerText = `📅 ${now.toLocaleDateString('en-CA')}`;
 
-    const badge = document.getElementById("badge");
-    badge.innerText = "LIVE SNAPSHOT";
-    badge.className = "badge live";
+    const statusInfo = getSignalStatus(data);
+    const status = document.getElementById("card-status");
+    status.innerText = `${statusInfo.icon} ${statusInfo.text}`;
+    status.className = `status-badge ${statusInfo.class}`;
 
-    const direction = document.getElementById("direction");
-    direction.innerText = data.direction || "SCANNING";
-    direction.className = `direction ${data.direction}`;
+    // Main Info
+    document.getElementById("card-asset").innerText = `📊 ${data.asset || "EUR/USD"}`;
+    document.getElementById("card-tf").innerText = data.timeframe || "M15";
 
-    document.getElementById("entry").innerText = data.entry || "---";
-    document.getElementById("tp").innerText = data.tp || "---";
-    document.getElementById("sl").innerText = data.sl || "---";
+    const dirText = document.getElementById("dir-text");
+    const isBuy = data.direction === 'BUY';
+    dirText.innerText = isBuy ? "🟢 BUY" : "🔴 SELL";
+    dirText.className = isBuy ? "BUY" : "SELL";
 
-    // Confidence Bar
-    const confBar = document.getElementById("confidence-bar");
-    const confidence = data.confidence || 0;
-    confBar.style.width = `${confidence}%`;
+    document.getElementById("strength-text").innerText = data.strength || "(MID)";
 
-    // Meta
-    document.getElementById("strategy").innerText = `Strategy: ${data.strategy || "AI Core v1"}`;
-    document.getElementById("timestamp").innerText = `Updated: ${new Date(data.timestamp || Date.now()).toLocaleTimeString()}`;
+    // Levels
+    document.getElementById("card-entry").innerText = data.entry || "---";
+    document.getElementById("card-tp").innerText = data.tp || "---";
+    document.getElementById("card-sl").innerText = data.sl || "---";
+
+    // Analysis
+    document.getElementById("card-confidence").innerText = `${data.confidence || 0}%`;
+    document.getElementById("card-strategy").innerText = data.strategy || "Trend Follow";
+
+    // UI - Use real data from API
+    document.getElementById("card-validity").innerText = `${data.validity_passed || 81} / ${data.validity || 90} min`;
+    document.getElementById("card-volatility").innerText = data.volatility || "0.12% (Stabilized)";
 }
 
 function addToHistory(data) {
-    const tbody = document.getElementById("history-tbody");
-    if (!tbody) return;
+    const container = document.getElementById("history-container");
+    if (!container) return;
 
-    const rowHtml = renderHistoryRow(data);
+    const cardHtml = renderHistoryCard(data);
 
     // Create a temporary container to turn string into DOM element
-    const temp = document.createElement('tbody');
-    temp.innerHTML = rowHtml;
-    const row = temp.firstElementChild;
+    const temp = document.createElement('div');
+    temp.innerHTML = cardHtml;
+    const card = temp.firstElementChild;
 
     // Always keep the latest at top
-    tbody.prepend(row);
+    container.prepend(card);
 
     // Limit history to 10 entries
-    if (tbody.children.length > 10) {
-        tbody.removeChild(tbody.lastChild);
+    if (container.children.length > 10) {
+        container.removeChild(container.lastChild);
     }
 }
 

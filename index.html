@@ -22,7 +22,7 @@
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 
   <!-- Styles -->
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./styles.css">
 </head>
 
 <body>
@@ -47,67 +47,87 @@
 
     <!-- Featured Signal Card -->
     <div id="signal-card" class="bento-card signal-card hidden animate-in">
-      <div class="signal-header">
-        <div id="asset" class="asset-name"></div>
-        <div id="badge" class="direction-badge"></div>
+      <div class="card-section header-section">
+        <div class="sub-header">ℹ️ You are viewing today's signal</div>
+        <div class="date-status">
+          <span id="card-date">📅 2026-01-18</span>
+          <span id="card-status" class="status-badge live">🟢 LIVE</span>
+        </div>
       </div>
 
-      <div id="direction" style="font-size: 2rem; font-weight: 800; text-align: center; margin: var(--spacing-md) 0;">
+      <div class="divider"></div>
+
+      <div class="card-section main-info">
+        <div class="asset-tf">
+          <span id="card-asset">🇪🇺 EUR/USD</span>
+          <span class="separator">|</span>
+          <span id="card-tf">M15</span>
+        </div>
+        <div id="card-direction" class="direction-strength">
+          <span id="dir-text">🟢 BUY</span>
+          <span id="strength-text">(LOW)</span>
+        </div>
       </div>
 
-      <div class="signal-details">
-        <div class="detail-group">
-          <div class="price-levels">
-            <div class="price-item">
-              <span class="price-label">ENTRY</span>
-              <b id="entry" class="price-value" style="color: var(--primary-cyan)"></b>
-            </div>
-            <div class="price-item">
-              <span class="price-label">TAKE PROFIT</span>
-              <b id="tp" class="price-value" style="color: var(--accent-green)"></b>
-            </div>
-            <div class="price-item">
-              <span class="price-label">STOP LOSS</span>
-              <b id="sl" class="price-value" style="color: #ff4444"></b>
-            </div>
-          </div>
-        </div>
+      <div class="divider"></div>
 
-        <div class="detail-group">
-          <div class="detail-label">AI Confidence</div>
-          <div class="confidence">
-            <div class="sc-progress-track"
-              style="background: rgba(255,255,255,0.1); border-radius: 10px; height: 12px; margin: 10px 0;">
-              <div id="confidence-bar" class="sc-progress-fill"
-                style="height: 100%; border-radius: 10px; transition: width 0.5s ease;"></div>
-            </div>
-          </div>
-          <div class="meta"
-            style="display: flex; justify-content: space-between; margin-top: var(--spacing-sm); font-size: 0.8rem; color: var(--text-secondary);">
-            <span id="strategy"></span>
-            <span id="timestamp"></span>
-          </div>
+      <div class="card-section levels-section">
+        <div class="level-item">
+          <span class="icon">🎯</span>
+          <span>Entry:</span>
+          <b id="card-entry">1.16044</b>
         </div>
+        <div class="level-item">
+          <span class="icon">💰</span>
+          <span>TP:</span>
+          <b id="card-tp">1.16194</b>
+        </div>
+        <div class="level-item">
+          <span class="icon">🛑</span>
+          <span>SL:</span>
+          <b id="card-sl">1.15894</b>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-section analysis-section">
+        <div class="analysis-item">
+          <span>⭐ Confidence:</span>
+          <span id="card-confidence">55%</span>
+        </div>
+        <div class="analysis-item">
+          <span>🧠 Strategy:</span>
+          <span id="card-strategy">Trend Follow</span>
+        </div>
+        <div class="analysis-item">
+          <span>⏳ Validity:</span>
+          <span id="card-validity">81 / 90 min</span>
+        </div>
+        <div class="analysis-item">
+          <span>🌊 Volatility:</span>
+          <span id="card-volatility">0.12%</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-section disclaimer-section">
+        <div class="disclaimer-text">⚠️ Educational purpose only</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-section actions-section">
+        <button class="action-btn chart-btn">📈 View Chart</button>
+        <button class="action-btn refresh-btn" onclick="location.reload()">🔄 Refresh</button>
       </div>
     </div>
 
     <!-- Signal History Section -->
     <h2 style="margin: var(--spacing-xl) 0 var(--spacing-md); color: var(--primary-cyan);">📜 Signal History</h2>
-    <div class="bento-card" style="padding: 0; overflow-x: auto;">
-      <table style="width: 100%; border-collapse: collapse; text-align: left;">
-        <thead>
-          <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-secondary);">
-            <th style="padding: var(--spacing-sm);">Time</th>
-            <th style="padding: var(--spacing-sm);">Asset</th>
-            <th style="padding: var(--spacing-sm);">Dir</th>
-            <th style="padding: var(--spacing-sm);">Entry</th>
-            <th style="padding: var(--spacing-sm);">TP</th>
-            <th style="padding: var(--spacing-sm);">SL</th>
-            <th style="padding: var(--spacing-sm);">Status</th>
-          </tr>
-        </thead>
-        <tbody id="history-tbody"></tbody>
-      </table>
+    <div id="history-container" class="history-stack">
+      <!-- History cards will be loaded here -->
     </div>
   </main>
 
