@@ -15,11 +15,11 @@ Frontend:
 
 ### Scope Control (FREEZE RULES)
 **STRICTLY FROZEN (DO NOT TOUCH):**
-- `backend/main.py` (FastAPI core)
-- `backend/signal.py` (Engine logic)
-- `backend/market.py` (Data fetching)
-- `backend/telegram.py` (Alert formatting)
-- `backend/Dockerfile`
+- `main.py` (FastAPI core - moved to root)
+- `signal.py` (Engine logic - moved to root)
+- `market.py` (Data fetching - moved to root)
+- `telegram.py` (Alert formatting - moved to root)
+- `requirements.txt` (Moved to root)
 - `Dockerfile` (Root)
 - Railway Service configuration (PORT, Start Command).
 
