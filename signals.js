@@ -1,143 +1,256 @@
-/**
- * Signals Formatter - Product-Grade Card UI
- */
+﻿// Signal Genius AI - Frontend Logic
+// Auto-refresh every 10 seconds
 
-export function renderStats(stats) {
-  if (!stats) return "";
-  return `
-    <div class="stat-item">
-      <div class="label">Win Rate</div>
-      <div class="val" style="color: var(--success)">${stats.win_rate}%</div>
-    </div>
-    <div class="stat-item">
-      <div class="label">Pips</div>
-      <div class="val" style="color: var(--primary-accent)">${stats.avg_pips > 0 ? '+' : ''}${stats.avg_pips}</div>
-    </div>
-    <div class="stat-item">
-      <div class="label">Wins</div>
-      <div class="val">${stats.win}</div>
-    </div>
-    <div class="stat-item">
-      <div class="label">Losses</div>
-      <div class="val">${stats.loss}</div>
-    </div>
-  `;
+const CONFIG = {
+    API_ENDPOINT: '/api/v1/lab/market-reference',
+    REFRESH_INTERVAL: 10000, // 10 seconds
+    SYMBOL: 'EURUSD',
+    TIMEFRAME: 'M15'
+};
+
+let refreshTimer = null;
+let lastUpdateTime = null;
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('≡ƒÜÇ Signal Genius AI - Initializing...');
+    loadSignal();
+    startAutoRefresh();
+    updateRefreshIndicator();
+});
+
+// Load signal data
+async function loadSignal() {
+    try {
+        // For now, use mock data since API is not ready
+        const signal = await fetchSignalData();
+
+        if (signal && signal.confidence >= 95) {
+            renderSignal(signal);
+        } else {
+            renderWaitingState();
+        }
+
+        lastUpdateTime = new Date();
+    } catch (error) {
+        console.error('Error loading signal:', error);
+        renderWaitingState();
+    }
 }
 
-export function getConfidenceMeta(confidence) {
-  if (confidence >= 75) {
-    return {
-      label: "STRONG",
-      class: "confidence-75",
-      color: "#16a34a",
-      icon: "🟢",
-      warning: null
-    }
-  }
-  if (confidence >= 60) {
-    return {
-      label: "NORMAL",
-      class: "confidence-60",
-      color: "#2563eb",
-      icon: "🔵",
-      warning: "Trade with caution. Wait for confirmation."
-    }
-  }
-  if (confidence >= 50) {
-    return {
-      label: "LOW",
-      class: "confidence-50",
-      color: "#ca8a04",
-      icon: "🟡",
-      warning: "Low probability setup. For reference only."
-    }
-  }
-  return {
-    label: "NO TRADE",
-    class: "confidence-low",
-    color: "#dc2626",
-    icon: "🔴",
-    warning: "Risky market conditions. No trade recommended."
-  }
+// Fetch signal data (mock for now)
+async function fetchSignalData() {
+    // TODO: Replace with actual API call when backend is ready
+    // const response = await fetch(`${CONFIG.API_ENDPOINT}?symbol=${CONFIG.SYMBOL}&tf=${CONFIG.TIMEFRAME}`);
+    // return await response.json();
+
+    // Mock data for demonstration
+    return getMockSignal();
 }
 
-export function calcExpiryPercent(createdAt, expiryMinutes) {
-  if (!createdAt || !expiryMinutes) return 0;
-  const now = Date.now();
-  const start = new Date(createdAt).getTime();
-  const elapsed = (now - start) / 60000; // minutes
-  return Math.min(100, Math.max(0, (elapsed / expiryMinutes) * 100));
+// Mock signal generator
+function getMockSignal() {
+    const now = new Date();
+    const confidence = 96; // High confidence for demo
+
+    if (confidence < 95) {
+        return null;
+    }
+
+    return {
+        asset: "EUR/USD",
+        direction: "BUY",
+        direction_icon: "≡ƒƒó",
+        timeframe: "M15",
+        session: "London ΓåÆ New York Overlap",
+
+        price_levels: {
+            entry_zone: ["1.16710", "1.16750"],
+            take_profit: "1.17080",
+            stop_loss: "1.16480"
+        },
+
+        trade_details: {
+            target_pips: 35,
+            risk_reward: "1 : 1.40",
+            suggested_risk: "0.5% ΓÇô 1%"
+        },
+
+        trade_type: "Intraday",
+        confidence: confidence,
+
+        posted_at_utc: now.toISOString(),
+
+        expiry_rules: {
+            session_only: true,
+            expires_at: "NY_CLOSE",
+            invalidate_if_missed_entry: true
+        },
+
+        disclaimer: "Not financial advice. Trade responsibly."
+    };
 }
 
-export function renderCard(data) {
-  if (!data || data.status !== "ok" || !data.payload) {
-    return `<div class="signal-card error">⚠️ No valid signal data available</div>`;
-  }
+// Render signal card
+function renderSignal(signal) {
+    const container = document.getElementById('signal-container');
+    const directionClass = signal.direction.toLowerCase();
 
-  const p = data.payload;
-  const meta = getConfidenceMeta(p.confidence);
-  const expiryPercent = calcExpiryPercent(p.generated_at, p.expiry?.minutes || 45);
-  const isStabilizer = p.strategy === "Stabilizer" || p.signal_id?.includes("STAB");
-
-  return `
-    <div class="signal-card">
+    const html = `
+    <div class="bento-card signal-card animate-in">
       <div class="signal-header">
-        <h2 style="font-weight: 700; color: #fff; font-size: 20px;">${p.symbol}</h2>
-        <span class="status-label">${isStabilizer ? 'STABILIZER' : 'CORE ENGINE'}</span>
-      </div>
-
-      <div class="signal-direction ${p.direction === 'BUY' ? 'buy' : 'sell'}" style="margin-top: 10px;">
-        ${p.direction === 'BUY' ? '🟢 BUY' : '🔴 SELL'}
-      </div>
-
-      <div style="display: flex; gap: 8px; margin-bottom: 20px;">
-        <div class="confidence-badge ${meta.class}" style="margin-bottom: 0; padding: 6px 12px; font-size: 12px;">
-          ${meta.icon} ${p.confidence}% ${meta.label}
+        <div>
+          <h2 class="asset-name">${signal.asset}</h2>
+          <div class="detail-label">
+            ΓÅ│ Timeframe: <strong>${signal.timeframe}</strong> | ≡ƒîì ${signal.session}
+          </div>
         </div>
-        <div class="status-label" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); padding: 6px 12px; font-size: 10px;">
-          📅 TODAY'S SIGNAL (LIVE)
+        <div class="direction-badge ${directionClass}">
+          ${signal.direction_icon} ${signal.direction}
         </div>
       </div>
-
-      ${meta.warning ? `<div class="warning">⚠️ ${meta.warning}</div>` : ""}
-
-      <div class="detail-grid">
-        <div class="detail-box">
-          <label>Entry</label>
-          <span>${p.entry}</span>
+      
+      <div class="signal-details">
+        <div class="detail-group">
+          <div class="detail-label">≡ƒÆ░ Price Levels</div>
+          <div class="price-levels">
+            <div class="price-item">
+              <span class="price-label">Entry Zone:</span>
+              <span class="price-value">${signal.price_levels.entry_zone[0]} ΓÇô ${signal.price_levels.entry_zone[1]}</span>
+            </div>
+            <div class="price-item">
+              <span class="price-label">Take Profit:</span>
+              <span class="price-value" style="color: var(--accent-green)">${signal.price_levels.take_profit}</span>
+            </div>
+            <div class="price-item">
+              <span class="price-label">Stop Loss:</span>
+              <span class="price-value" style="color: #ff4444">${signal.price_levels.stop_loss}</span>
+            </div>
+          </div>
         </div>
-        <div class="detail-box">
-          <label>Timeframe</label>
-          <span>${p.timeframe}</span>
+        
+        <div class="detail-group">
+          <div class="detail-label">≡ƒôÅ Trade Details</div>
+          <div class="price-levels">
+            <div class="price-item">
+              <span class="price-label">Target:</span>
+              <span class="price-value">+${signal.trade_details.target_pips} pips</span>
+            </div>
+            <div class="price-item">
+              <span class="price-label">RiskΓÇôReward:</span>
+              <span class="price-value">${signal.trade_details.risk_reward}</span>
+            </div>
+            <div class="price-item">
+              <span class="price-label">Suggested Risk:</span>
+              <span class="price-value">${signal.trade_details.suggested_risk}</span>
+            </div>
+          </div>
         </div>
-        <div class="detail-box">
-          <label>Take Profit</label>
-          <span class="success">${p.tp}</span>
-        </div>
-        <div class="detail-box">
-          <label>Stop Loss</label>
-          <span class="danger">${p.sl}</span>
+        
+        <div class="detail-group">
+          <div class="detail-label">≡ƒòÆ Trade Info</div>
+          <div class="price-levels">
+            <div class="price-item">
+              <span class="price-label">Type:</span>
+              <span class="price-value">${signal.trade_type}</span>
+            </div>
+            <div class="price-item">
+              <span class="price-label">Posted:</span>
+              <span class="price-value">${formatDateTime(signal.posted_at_utc)}</span>
+            </div>
+            <div class="price-item">
+              <span class="price-label">AI Confidence:</span>
+              <span class="confidence-badge">${signal.confidence}% Γ¡É</span>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="expiry-container">
-        <div class="expiry-label">
-          <span style="font-size: 11px;">VALIDITY</span>
-          <span style="font-size: 11px;">EXTENDED WINDOW</span>
-        </div>
-        <div class="expiry-bar">
-          <div class="expiry-progress" style="width: ${expiryPercent}%"></div>
-        </div>
-        <div style="text-align: center; font-size: 10px; color: var(--text-muted); margin-top: 12px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 10px;">
-            Updated every 30s • Valid for current session
-        </div>
+      
+      <div class="expiry-rules">
+        <h4>ΓÅ│ Auto-Expiry Rules</h4>
+        <ul>
+          <li>Signal is valid for this session only</li>
+          <li>Expires at New York close or if TP or SL is hit</li>
+          <li>Do not enter if price has already moved significantly beyond the entry zone</li>
+        </ul>
       </div>
-
-      <div class="signal-footer" style="margin-top: 20px; font-size: 10px; opacity: 0.6; display: flex; justify-content: space-between;">
-        <span>ID: <b>${p.signal_id || 'N/A'}</b></span>
-        <span>VOL: <b>0.12%</b></span>
+      
+      <div style="text-align: center; margin-top: var(--spacing-md); padding-top: var(--spacing-md); border-top: 1px solid var(--border-color);">
+        <small style="color: var(--text-secondary);">ΓÜá∩╕Å ${signal.disclaimer}</small>
       </div>
     </div>
   `;
+
+    container.innerHTML = html;
 }
 
+// Render waiting state
+function renderWaitingState() {
+    const container = document.getElementById('signal-container');
+
+    const html = `
+    <div class="bento-card signal-card animate-in">
+      <div class="waiting-state">
+        <div class="waiting-icon">≡ƒòÆ</div>
+        <h3 class="waiting-title">No High-Confidence Signal Yet</h3>
+        <p class="waiting-description">
+          Signal Genius AI only publishes signals when AI Confidence ΓëÑ 95%.
+          <br><br>
+          The system is continuously analyzing EUR/USD M15 market conditions.
+          Check back soon or wait for our Telegram notification.
+        </p>
+      </div>
+    </div>
+  `;
+
+    container.innerHTML = html;
+}
+
+// Start auto-refresh
+function startAutoRefresh() {
+    if (refreshTimer) {
+        clearInterval(refreshTimer);
+    }
+
+    refreshTimer = setInterval(() => {
+        console.log('≡ƒöä Auto-refreshing signal...');
+        loadSignal();
+    }, CONFIG.REFRESH_INTERVAL);
+
+    console.log(`Γ£à Auto-refresh enabled (every ${CONFIG.REFRESH_INTERVAL / 1000}s)`);
+}
+
+// Update refresh indicator
+function updateRefreshIndicator() {
+    setInterval(() => {
+        const indicator = document.getElementById('refresh-indicator');
+        if (indicator && lastUpdateTime) {
+            const secondsAgo = Math.floor((new Date() - lastUpdateTime) / 1000);
+            const nextRefresh = Math.max(0, CONFIG.REFRESH_INTERVAL / 1000 - secondsAgo);
+            indicator.textContent = `Next refresh in ${nextRefresh}s`;
+        }
+    }, 1000);
+}
+
+// Format date time
+function formatDateTime(isoString) {
+    const date = new Date(isoString);
+    const options = {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC'
+    };
+    return date.toLocaleString('en-US', options) + ' UTC';
+}
+
+// Export for testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        loadSignal,
+        getMockSignal,
+        formatDateTime
+    };
+}
