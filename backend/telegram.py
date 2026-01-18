@@ -2,13 +2,13 @@ import os
 import requests
 from datetime import datetime
 
-def send_telegram_alert(signal):
+def send_telegram_alert(signal, override_chat_id=None):
     """
     Formats the signal exactly 1:1 with the Web Card layout for Telegram.
     TẮT Markdown (parse_mode) để đảm bảo bot gửi tin nhắn thành công ngay lập tức.
     """
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-    chat_id = os.getenv("TELEGRAM_CHAT_ID")
+    chat_id = override_chat_id or os.getenv("TELEGRAM_CHAT_ID")
     
     if not bot_token or not chat_id:
         print("⚠️ Telegram credentials missing. Skipping alert.")
