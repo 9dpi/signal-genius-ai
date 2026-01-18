@@ -63,16 +63,19 @@
     </div>
 
     <!-- Signal Container -->
-    <div id="signal-container">
-      <!-- Signal will be loaded here by JavaScript -->
-      <div class="bento-card signal-card">
-        <div class="waiting-state">
-          <div class="waiting-icon">ΓÅ│</div>
-          <h3 class="waiting-title">Loading Signal...</h3>
-          <p class="waiting-description">Please wait while we fetch the latest market analysis.</p>
-        </div>
+    <div id="loading" class="bento-card signal-card">
+      <div class="waiting-state">
+        <div class="waiting-icon">⏳</div>
+        <h2 class="waiting-title">Loading Signal...</h2>
+        <p class="waiting-description">Please wait while we fetch the latest market analysis.</p>
       </div>
     </div>
+
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: var(--spacing-md);">
+      <tbody id="signals-tbody"></tbody>
+    </table>
+
+    <div id="stats-container"></div>
 
     <!-- Info Cards -->
     <div class="bento-grid">

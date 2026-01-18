@@ -1,68 +1,76 @@
-﻿export function renderCard(data) {
+﻿export function renderRow(data) {
   const isBuy = data.direction === 'BUY';
-  const actionClass = isBuy ? 'sc-action-buy' : 'sc-action-sell';
-  const statusColor = isBuy ? '#10b981' : '#ef4444';
-  const progress = data.confidence || 60;
+  const directionClass = isBuy ? 'buy' : 'sell';
 
-  // Mock calculations for display if not present
-  const entry = data.entry;
-  const tp = data.tp;
-  const sl = data.sl;
-  const pips = Math.abs(tp - entry) * 10000; // Rough calc for forex
-  const rr = "1:2"; // Hardcoded or calc
+  // Format data
+  const entry = data.entry || '0.00000';
+  const tp = data.tp || '0.00000';
+  const sl = data.sl || '0.00000';
+  const confidence = data.confidence || 0;
+  const time = new Date().toLocaleTimeString();
 
-  return `
-    <div class="sc-card animate-in">
-      <div class="sc-header-top">
-        <span class="sc-tag">SNAPSHOT</span>
-        <span class="${actionClass}">${data.direction}</span>
-      </div>
-      <div class="sc-title">${data.asset || 'EURUSD'}</div>
-      <div class="sc-subtitle">⏳ ${data.timeframe || 'M15'} • LONDON SESSION</div>
-
-      <div class="sc-status">
-        <div class="sc-status-label">
-          <div class="sc-status-dot" style="background: ${statusColor}"></div>
-          <span class="text-valid" style="color: ${statusColor}">Valid Signal</span>
-        </div>
-        <div class="sc-progress-row">
-          <div class="sc-progress-track">
-            <div class="sc-progress-fill" style="width: ${progress}%; background: ${statusColor}"></div>
-          </div>
-          <div class="sc-progress-text">${progress}%</div>
+  const cardHtml = `
+    <div class="bento-card signal-card animate-in">
+      <div class="signal-header">
+        <div class="asset-name">${data.asset || 'EUR/USD'}</div>
+        <div class="direction-badge ${directionClass}">
+          ${isBuy ? '▲' : '▼'} ${data.direction}
         </div>
       </div>
 
-      <div class="sc-data-box">
-        <div class="sc-entry-section">
-          <div class="sc-label">💰 ENTRY ZONE</div>
-          <div class="sc-value-xl">${entry}</div>
-        </div>
-        <div class="sc-targets-row">
-          <div class="sc-target-col">
-            <div class="sc-label">🎯 TARGET</div>
-            <div class="sc-value-lg text-green">${tp}</div>
+      <div class="signal-details">
+        <!-- Confidence & Meta -->
+        <div class="detail-group">
+          <div class="detail-label">AI Confidence</div>
+          <div class="confidence-badge">
+             ⚡ ${confidence}%
           </div>
-          <div class="sc-target-col right">
-            <div class="sc-label">🛑 STOP</div>
-            <div class="sc-value-lg text-red">${sl}</div>
+          
+          <div style="margin-top: 1rem; display: flex; justify-content: space-between;">
+            <div>
+                <div class="detail-label">Timeframe</div>
+                <div class="detail-value">${data.timeframe || 'M15'}</div>
+            </div>
+            <div>
+                <div class="detail-label">Session</div>
+                <div class="detail-value">London</div>
+            </div>
           </div>
         </div>
+
+        <!-- Levels -->
+        <div class="detail-group">
+          <div class="price-levels">
+            <div class="price-item">
+              <span class="price-label">ENTRY</span>
+              <span class="price-value" style="color: var(--primary-cyan)">${entry}</span>
+            </div>
+            <div class="price-item">
+              <span class="price-label">TAKE PROFIT</span>
+              <span class="price-value" style="color: var(--accent-green)">${tp}</span>
+            </div>
+            <div class="price-item">
+              <span class="price-label">STOP LOSS</span>
+              <span class="price-value" style="color: #ff4444">${sl}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="sc-footer-stats">
-        <span>Potential: <strong>+${Math.round(pips)} pips</strong></span>
-        <span>RRR: <strong>${rr}</strong></span>
-      </div>
-      <div class="sc-footer-meta">
-        <span>Gen: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })} UTC</span>
-        <span class="sc-update">🔄 Update Available</span>
+      <div class="expiry-rules">
+        <h4>⚠️ Execution Rules</h4>
+        <ul>
+            <li><strong>Risk:</strong> Recommended 1% risk per trade.</li>
+            <li><strong>Invalidation:</strong> Signal invalid if price hits SL or after 3 candles.</li>
+            <li><strong>Generated:</strong> ${time}</li>
+        </ul>
       </div>
     </div>
   `;
+
+  return `<tr><td>${cardHtml}</td></tr>`;
 }
 
 export function renderStats(data) {
-  // Optional: keep it empty or return simplified stats if needed
   return "";
 }
