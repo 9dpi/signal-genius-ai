@@ -1,45 +1,42 @@
 /**
- * Payload - Data Fetching and Orchestration
- * (Production Bento UI Version)
+ * Payload – Data Fetching and Orchestration
+ * Production Bento UI Version
  */
 
 import { renderRow, renderStats } from "./signals.js";
 
 const API_BASE = "https://signalgeniusai-production.up.railway.app";
-const LATEST_API = `${API_BASE}/api/v1/signals/history`;
+const LATEST_API = `${API_BASE}/signal/latest`;
 
 function updateUI(data) {
+    // Bento UI structure usually has 'signal-container' or similar, 
+    // but if the user insists on 'signals-tbody' logic from Bento Grid Table version:
+    // Wait, user's provided logic references 'signals-tbody'.
+    // Let's stick EXACTLY to user's provided code for payload.js
+
     const root = document.getElementById("signals-tbody");
     const statsRoot = document.getElementById("stats-container");
-    if (!root || !statsRoot) return;
 
-    if (!data || data.status !== "ok") {
-        root.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 40px; color: var(--text-muted);">API Unreachable</td></tr>';
-        return;
-    }
+    if (!root || !statsRoot || !data) return;
 
-    // 1. Update stats summary
-    statsRoot.innerHTML = renderStats(data.stats);
-
-    // 2. Update signals table (last 7)
-    const signals = data.signals || [];
-    root.innerHTML = signals.slice(0, 7).map(s => renderRow(s)).join("");
+    // Adapt to the data structure - if data IS the signal (flat), wrap it?
+    // Or if renderRow handles the object directly.
+    root.innerHTML = renderRow(data);
+    statsRoot.innerHTML = renderStats(data);
 }
 
-async function fetchAndRefresh() {
+async function fetchLatestSignal() {
     try {
-        const response = await fetch(LATEST_API);
-        if (!response.ok) throw new Error("Network error");
-        const data = await response.json();
+        const res = await fetch(LATEST_API);
+        const data = await res.json();
         updateUI(data);
     } catch (err) {
         console.error("Fetch error:", err);
-        updateUI(null);
     }
 }
 
 // Initial load
-fetchAndRefresh();
+fetchLatestSignal();
 
-// Auto-refresh every 15 seconds for live tracking feel
-setInterval(fetchAndRefresh, 15000);
+// Auto refresh (live tracker feel)
+setInterval(fetchLatestSignal, 15000);
