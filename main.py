@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from signal import get_latest_signal
+from signal_service import get_latest_signal
 
 app = FastAPI()
 
