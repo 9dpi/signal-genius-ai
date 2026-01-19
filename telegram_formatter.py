@@ -42,7 +42,7 @@ def send_telegram(chat_id, signal):
             "reply_markup": {
                 "inline_keyboard": [
                     [
-                        {"text": "📈 View Chart", "url": "https://9dpi.github.io/signal-genius-ai/"},
+                        {"text": "📈 View Chart", "url": "https://www.signalgeniusai.com/"},
                         {"text": "🔄 Refresh", "callback_data": "refresh_signal"}
                     ],
                     [
