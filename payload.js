@@ -33,12 +33,25 @@ async function loadSignal() {
 function updateFeaturedCard(data) {
     // Top Section
     const now = new Date(data.timestamp || Date.now());
-    document.getElementById("card-date").innerText = `📅 ${now.toLocaleDateString('en-CA')}`;
+
+    // Format: 21 Jan 2026 · 06:09 UTC
+    const dateOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+    const timeOptions = { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' };
+    const dateStr = now.toLocaleDateString('en-GB', dateOptions);
+    const timeStr = now.toLocaleTimeString('en-GB', timeOptions);
+
+    document.getElementById("card-generated-at").innerText = `${dateStr} · ${timeStr} UTC`;
 
     const statusInfo = getSignalStatus(data);
-    const status = document.getElementById("card-status");
-    status.innerText = `${statusInfo.icon} ${statusInfo.text}`;
-    status.className = `status-badge ${statusInfo.class}`;
+    const statusEl = document.getElementById("card-main-status");
+
+    if (statusInfo.isLive) {
+        statusEl.innerText = "Active — Monitoring Market";
+        statusEl.className = "meta-value status-text live";
+    } else {
+        statusEl.innerText = "EXPIRED — no longer active";
+        statusEl.className = "meta-value status-text expired";
+    }
 
     // Main Info
     document.getElementById("card-asset").innerText = `📊 ${data.asset || "EUR/USD"}`;
