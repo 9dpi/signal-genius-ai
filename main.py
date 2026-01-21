@@ -73,14 +73,15 @@ async def telegram_webhook(req: Request):
         chat_id = chat["id"]
 
         if text.startswith("/signal"):
-            # Fetch signal from live website instead of local engine
+            # Fetch signal from live website (Backend API)
             try:
-                response = requests.get("https://www.signalgeniusai.com/signal/latest", timeout=10)
+                # Use the REAL Backend API that the frontend uses
+                response = requests.get("https://signalgeniusai-production.up.railway.app/signal/latest", timeout=10)
                 response.raise_for_status()
                 signal = response.json()
-                print(f"✅ Fetched signal from website: {signal.get('asset', 'N/A')}")
+                print(f"✅ Fetched signal from API: {signal.get('asset', 'N/A')}")
             except Exception as e:
-                print(f"⚠️ Failed to fetch from website, using local fallback: {e}")
+                print(f"⚠️ Failed to fetch from API, using local fallback: {e}")
                 signal = get_latest_signal_safe()
             
             send_telegram(chat_id, signal)
