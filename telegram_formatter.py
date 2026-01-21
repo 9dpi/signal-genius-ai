@@ -13,24 +13,36 @@ def send_telegram(chat_id, signal):
         print("⚠️ Telegram credentials missing. Skipping alert.")
         return None
 
-    # Get status and validity from signal
+    # Get status from signal
     status = signal.get("status", "EXECUTED")
-    validity = signal.get("validity_status", "ACTIVE")
-    direction_emoji = "🟢" if signal["direction"] == "BUY" else "🔴"
     
-    message = (
-        f"Signal Genius AI\n"
-        f"Status: {status}\n"
-        f"Validity: {validity}\n\n"
-        f"{signal['asset']} | M15\n"
-        f"{direction_emoji} {signal['direction']}\n\n"
-        f"🎯 Entry: {signal['entry']}\n"
-        f"💰 TP: {signal['tp']}\n"
-        f"🛑 SL: {signal['sl']}\n"
-        f"--\n"
-        f"⚠️ Educational purpose only\n"
-        f"--"
-    )
+    # 1. Handle Market Closed State
+    if status == "MARKET_CLOSED":
+        message = (
+            "Signal Genius AI\n\n"
+            "Market Status: CLOSED\n\n"
+            "The Forex market is currently closed.\n"
+            "No signals are generated during this period.\n\n"
+            "Signals will resume when the market reopens."
+        )
+    else:
+        # 2. Standard Signal Format
+        validity = signal.get("validity_status", "ACTIVE")
+        direction_emoji = "🟢" if signal.get("direction") == "BUY" else "🔴"
+        
+        message = (
+            f"Signal Genius AI\n"
+            f"Status: {status}\n"
+            f"Validity: {validity}\n\n"
+            f"{signal['asset']} | M15\n"
+            f"{direction_emoji} {signal['direction']}\n\n"
+            f"🎯 Entry: {signal['entry']}\n"
+            f"💰 TP: {signal['tp']}\n"
+            f"🛑 SL: {signal['sl']}\n"
+            f"--\n"
+            f"⚠️ Educational purpose only\n"
+            f"--"
+        )
     
     # Gửi tin nhắn dùng text thuần, KHÔNG parse_mode, kèm theo buttons
     try:
@@ -41,7 +53,7 @@ def send_telegram(chat_id, signal):
             "reply_markup": {
                 "inline_keyboard": [
                     [
-                        {"text": "📈 View Chart", "url": "https://www.signalgeniusai.com/"},
+                        {"text": "📈 View Latest Signal", "url": "https://www.signalgeniusai.com/"},
                         {"text": "🔄 Refresh", "callback_data": "refresh_signal"}
                     ],
                     [
