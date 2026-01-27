@@ -13,6 +13,17 @@ async function loadSignal() {
         if (!res.ok) throw new Error("API error");
 
         const data = await res.json();
+
+        // GLOBAL STATUS CHECK: MARKET CLOSED
+        if (data.status === "MARKET_CLOSED") {
+            document.getElementById("loading").classList.add("hidden");
+            document.getElementById("signal-card").classList.add("hidden");
+            document.getElementById("market-closed").classList.remove("hidden");
+            return; // Stop processing
+        } else {
+            document.getElementById("market-closed").classList.add("hidden");
+        }
+
         updateFeaturedCard(data);
 
         // Only add to history if it's a new signal
