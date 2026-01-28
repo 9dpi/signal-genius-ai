@@ -382,6 +382,16 @@ h1.brand-name {
   margin-bottom: 12px;
 }
 
+.card-row.direction-row.buy {
+  color: var(--accent-green);
+  font-weight: 800;
+}
+
+.card-row.direction-row.sell {
+  color: var(--accent-red);
+  font-weight: 800;
+}
+
 .text-green {
   color: var(--accent-green);
 }

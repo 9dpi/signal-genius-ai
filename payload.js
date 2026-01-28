@@ -69,9 +69,18 @@ function updateFeaturedCard(data) {
     document.getElementById("card-tf").innerText = data.timeframe || "M15";
 
     const dirText = document.getElementById("dir-text");
-    const isBuy = data.direction === 'BUY';
-    dirText.innerText = isBuy ? "🟢 BUY" : "🔴 SELL";
-    dirText.className = isBuy ? "BUY" : "SELL";
+    const direction = data.direction ? data.direction.toUpperCase() : "WAIT";
+
+    if (direction === 'BUY') {
+        dirText.innerText = "🟢 BUY";
+        dirText.className = "BUY";
+    } else if (direction === 'SELL') {
+        dirText.innerText = "🔴 SELL";
+        dirText.className = "SELL";
+    } else {
+        dirText.innerText = `⚪ ${direction}`;
+        dirText.className = "NEUTRAL";
+    }
 
     document.getElementById("strength-text").innerText = data.strength || "(MID)";
 

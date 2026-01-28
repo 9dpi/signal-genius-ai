@@ -28,7 +28,8 @@ def send_telegram(chat_id, signal):
     else:
         # 2. Standard Signal Format
         validity = signal.get("validity_status", "ACTIVE")
-        direction_emoji = "🟢" if signal.get("direction") == "BUY" else "🔴"
+        direction = str(signal.get("direction", "WAIT")).upper()
+        direction_emoji = "🟢" if direction == "BUY" else "🔴" if direction == "SELL" else "⚪"
         
         message = (
             f"Signal Genius AI\n"
