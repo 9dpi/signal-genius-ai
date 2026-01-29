@@ -19,7 +19,7 @@ def send_telegram(chat_id, signal):
     # 1. Handle Market Closed State
     if status == "MARKET_CLOSED":
         message = (
-            "Signal Genius AI\n\n"
+            "SIGNAL GENIUS AI\n\n"
             "Market Status: CLOSED\n\n"
             "The Forex market is currently closed.\n"
             "No signals are generated during this period.\n\n"
@@ -32,7 +32,7 @@ def send_telegram(chat_id, signal):
         direction_emoji = "🟢" if direction == "BUY" else "🔴" if direction == "SELL" else "⚪"
         
         message = (
-            f"Signal Genius AI\n"
+            f"SIGNAL GENIUS AI\n"
             f"Status: {status}\n"
             f"Validity: {validity}\n\n"
             f"{signal['asset']} | M15\n"
