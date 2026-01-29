@@ -28,7 +28,7 @@ def generate_signal():
         return {
             "asset": sig.get("asset", "EUR/USD"),
             "direction": sig.get("direction", "BUY"),
-            "strength": sig.get("strength", "(HIGH)"),
+            "strength": f"{int(float(sig.get('strength', 0)) * 100)}%" if isinstance(sig.get("strength"), (int, float)) or (isinstance(sig.get("strength"), str) and sig.get("strength", "").replace(".","").isdigit()) else sig.get("strength", "0%"),
             "entry": round(float(sig.get("entry_low", 0)), 5),
             "tp": round(float(sig.get("tp", 0)), 5),
             "sl": round(float(sig.get("sl", 0)), 5),
