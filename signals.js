@@ -26,10 +26,10 @@ export function renderHistoryCard(signal) {
       ${signal.direction} | Conf: ${signal.confidence || 0}%
     </div>
     <div class="card-row">
-      Entry: <b>${signal.entry}</b>
+      Entry: <b>${parseFloat(signal.entry).toFixed(5)}</b>
     </div>
     <div class="card-row">
-      TP: <span class="text-green">${signal.tp}</span> | SL: <span class="text-red">${signal.sl}</span>
+      TP: <span class="text-green">${parseFloat(signal.tp).toFixed(5)}</span> | SL: <span class="text-red">${parseFloat(signal.sl).toFixed(5)}</span>
     </div>
     <div class="card-row muted">
       ⏱ ${signal.validity || 90} min | ${new Date(signal.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

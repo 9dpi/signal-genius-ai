@@ -85,9 +85,10 @@ function updateFeaturedCard(data) {
     document.getElementById("strength-text").innerText = data.strength || "(MID)";
 
     // Levels
-    document.getElementById("card-entry").innerText = data.entry || "---";
-    document.getElementById("card-tp").innerText = data.tp || "---";
-    document.getElementById("card-sl").innerText = data.sl || "---";
+    const formatPrice = (val) => val ? parseFloat(val).toFixed(5) : "---";
+    document.getElementById("card-entry").innerText = formatPrice(data.entry);
+    document.getElementById("card-tp").innerText = formatPrice(data.tp);
+    document.getElementById("card-sl").innerText = formatPrice(data.sl);
 
     // Analysis
     document.getElementById("card-confidence").innerText = `${data.confidence || 0}%`;
