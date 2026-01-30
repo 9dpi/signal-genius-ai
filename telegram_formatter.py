@@ -50,8 +50,7 @@ def format_signal_message(signal: dict) -> str:
             f"Strength: {strength_pct}\n\n"
             f"🎯 Entry: {entry}\n"
             f"💰 TP: {tp}\n"
-            f"🛑 SL: {sl}\n\n"
-            f"🔗 [View Live Dashboard](https://www.signalgeniusai.com/)"
+            f"🛑 SL: {sl}\n"
         )
 
     # TEMPLATE 2 – SIGNAL ĐÃ HẾT ENTRY (EXPIRED – RECORD)
@@ -67,8 +66,7 @@ def format_signal_message(signal: dict) -> str:
             f"Entry: {entry}\n"
             f"TP: {tp}\n"
             f"SL: {sl}\n\n"
-            f"Result: {result}\n\n"
-            f"🔗 [View Live Dashboard](https://www.signalgeniusai.com/)"
+            f"Result: {result}"
         )
 
     # TEMPLATE 1 – SIGNAL CÒN HIỆU LỰC (ACTIVE)
@@ -87,8 +85,7 @@ def format_signal_message(signal: dict) -> str:
         f"Force/Strength: {strength_pct}\n\n"
         f"🎯 Entry: {entry}\n"
         f"💰 TP: {tp}\n"
-        f"🛑 SL: {sl}\n\n"
-        f"🔗 [View Live Dashboard](https://www.signalgeniusai.com/)"
+        f"🛑 SL: {sl}\n"
     )
 
 def send_telegram(chat_id, signal):
