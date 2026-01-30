@@ -42,26 +42,32 @@ async function loadSignal() {
 }
 
 function updateFeaturedCard(data) {
-    // Top Section
-    const now = new Date(data.timestamp || Date.now());
+    // Safe Date Parsing
+    const timestamp = data.timestamp;
+    const dateObj = (timestamp && !isNaN(new Date(timestamp))) ? new Date(timestamp) : null;
 
-    // Format: 21 Jan 2026 · 06:09 UTC
-    const dateOptions = { day: 'numeric', month: 'short', year: 'numeric' };
-    const timeOptions = { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' };
-    const dateStr = now.toLocaleDateString('en-GB', dateOptions);
-    const timeStr = now.toLocaleTimeString('en-GB', timeOptions);
-
-    document.getElementById("card-generated-at").innerText = `${dateStr} · ${timeStr} UTC`;
+    if (dateObj) {
+        // Format: 2026-01-29 14:05:00 UTC (User preference for clarity)
+        const dateOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'UTC' };
+        const dStr = dateObj.toLocaleDateString('en-CA', dateOptions); // en-CA gives YYYY-MM-DD
+        const tStr = dateObj.toLocaleTimeString('en-GB', timeOptions);
+        document.getElementById("card-generated-at").innerText = `${dStr} ${tStr} UTC`;
+    } else {
+        document.getElementById("card-generated-at").innerText = "— (Historical Record)";
+    }
 
     const statusInfo = getSignalStatus(data);
-    const statusEl = document.getElementById("card-main-status");
+    const statusEl = document.getElementById("card-status-detailed");
 
-    if (statusInfo.isLive) {
-        statusEl.innerText = "Active — Monitoring Market";
-        statusEl.className = "meta-value status-text live";
-    } else {
-        statusEl.innerText = "EXPIRED — no longer active";
-        statusEl.className = "meta-value status-text expired";
+    if (statusEl) {
+        if (statusInfo.isLive) {
+            statusEl.innerText = "ACTIVE — Monitoring Market";
+            statusEl.style.color = "var(--accent-green)";
+        } else {
+            statusEl.innerText = "EXPIRED (Entry not hit before expiry)";
+            statusEl.style.color = "var(--text-secondary)";
+        }
     }
 
     // Main Info
@@ -95,8 +101,7 @@ function updateFeaturedCard(data) {
     document.getElementById("card-strategy").innerText = data.strategy || "Trend Follow";
 
     // UI - Use real data from API
-    document.getElementById("card-validity").innerText = `${data.validity_passed || 81} / ${data.validity || 90} min`;
-    document.getElementById("card-volatility").innerText = data.volatility || "0.12% (Stabilized)";
+    document.getElementById("card-volatility").innerText = data.volatility || "Verified";
 }
 
 function addToHistory(data) {

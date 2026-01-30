@@ -1,5 +1,6 @@
 ﻿export function getSignalStatus(signal) {
-  const ageMin = (Date.now() - new Date(signal.timestamp)) / 60000;
+  const ts = signal.timestamp;
+  const ageMin = (ts && !isNaN(new Date(ts))) ? (Date.now() - new Date(ts)) / 60000 : 9999;
   const validity = signal.validity || 90;
   const isLive = ageMin <= validity;
   return {
@@ -32,7 +33,7 @@ export function renderHistoryCard(signal) {
       TP: <span class="text-green">${parseFloat(signal.tp).toFixed(5)}</span> | SL: <span class="text-red">${parseFloat(signal.sl).toFixed(5)}</span>
     </div>
     <div class="card-row muted">
-      ⏱ ${signal.validity || 90} min | ${new Date(signal.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+      ⏱ ${signal.validity || 90} min | ${(signal.timestamp && !isNaN(new Date(signal.timestamp))) ? new Date(signal.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC' : '---'}
     </div>
   </div>`;
 }
