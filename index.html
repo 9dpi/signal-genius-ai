@@ -36,130 +36,211 @@
       <h1 class="brand-name">Signal Genius <span class="ai-badge">AI</span></h1>
     </div>
 
-    <!-- Loading State -->
-    <div id="loading" class="bento-card signal-card">
-      <div class="waiting-state">
-        <div class="waiting-icon">⏳</div>
-        <h2 class="waiting-title">Loading Signal...</h2>
-        <p class="waiting-description">Please wait while we fetch the latest market analysis.</p>
-      </div>
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="tab-signal">
+        <span class="btn-icon">⚡</span> AI Signals
+      </button>
+      <button class="tab-btn" data-tab="tab-logs">
+        <span class="btn-icon">📜</span> System Logs
+      </button>
     </div>
 
-    <!-- Market Closed State -->
-    <div id="market-closed" class="bento-card signal-card hidden animate-in closed-state">
-      <div class="card-section header-section">
-        <div class="record-header">
-          <div class="main-title">🟦 STATE — MARKET CLOSED</div>
-          <div class="sub-title">Market Status: Closed</div>
+    <!-- Signal Tab Content -->
+    <div id="tab-signal" class="tab-pane active">
+      <!-- Loading State -->
+      <div id="loading" class="bento-card signal-card">
+        <div class="waiting-state">
+          <div class="waiting-icon">⏳</div>
+          <h2 class="waiting-title">Loading Signal...</h2>
+          <p class="waiting-description">Please wait while we fetch the latest market analysis.</p>
         </div>
       </div>
 
-      <div class="card-section main-info">
-        <div class="closed-icon">🌑</div>
-        <h2 class="closed-title">The Forex market is currently closed.</h2>
-        <p class="closed-desc">
-          Quantix operates only during live market hours.<br>
-          No signals are generated when the market is closed.
-        </p>
-        <p class="closed-note">Signals will resume automatically when the market reopens.</p>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="card-section disclaimer-section">
-        <div class="disclaimer-text">This behavior is intentional and part of the system design.</div>
-      </div>
-    </div>
-
-    <!-- Featured Signal Card -->
-    <div id="signal-card" class="bento-card signal-card hidden animate-in">
-      <div class="card-section header-section">
-        <div class="record-header">
-          <div class="main-title">Signal Record (Latest Snapshot)</div>
-          <div class="sub-title">Read-only · Historical</div>
-        </div>
-
-        <div class="meta-grid">
-          <div class="meta-block">
-            <div class="meta-label">Generated At</div>
-            <div id="card-generated-at" class="meta-value">—</div>
+      <!-- Market Closed State -->
+      <div id="market-closed" class="bento-card signal-card hidden animate-in closed-state">
+        <div class="card-section header-section">
+          <div class="record-header">
+            <div class="main-title">🟦 STATE — MARKET CLOSED</div>
+            <div class="sub-title">Market Status: Closed</div>
           </div>
         </div>
-      </div>
 
-      <div class="divider"></div>
+        <div class="card-section main-info">
+          <div class="closed-icon">🌑</div>
+          <h2 class="closed-title">The Forex market is currently closed.</h2>
+          <p class="closed-desc">
+            Quantix operates only during live market hours.<br>
+            No signals are generated when the market is closed.
+          </p>
+          <p class="closed-note">Signals will resume automatically when the market reopens.</p>
+        </div>
 
-      <div class="card-section main-info">
-        <div class="asset-tf">
-          <span id="card-asset">🇪🇺 EUR/USD</span>
-          <span class="separator">|</span>
-          <span id="card-tf">M15</span>
-        </div>
-        <div id="card-direction" class="direction-strength">
-          <span id="dir-text">🟢 BUY</span>
-          <span id="strength-text">(LOW)</span>
-        </div>
-      </div>
+        <div class="divider"></div>
 
-      <div class="divider"></div>
-
-      <div class="card-section levels-section">
-        <div class="level-item">
-          <span class="icon">🎯</span>
-          <span>Entry:</span>
-          <b id="card-entry">1.16044</b>
-        </div>
-        <div class="level-item">
-          <span class="icon">💰</span>
-          <span>TP:</span>
-          <b id="card-tp">1.16194</b>
-        </div>
-        <div class="level-item">
-          <span class="icon">🛑</span>
-          <span>SL:</span>
-          <b id="card-sl">1.15894</b>
+        <div class="card-section disclaimer-section">
+          <div class="disclaimer-text">This behavior is intentional and part of the system design.</div>
         </div>
       </div>
 
-      <div class="divider"></div>
+      <!-- Featured Signal Card -->
+      <div id="signal-card" class="bento-card signal-card hidden animate-in">
+        <div class="card-section header-section">
+          <div class="record-header">
+            <div class="main-title">Signal Record (Latest Snapshot)</div>
+            <div class="sub-title">Read-only · Historical</div>
+          </div>
 
-      <div class="card-section analysis-section">
-        <div class="analysis-item">
-          <span>⭐ Confidence:</span>
-          <span id="card-confidence">55%</span>
+          <div class="meta-grid">
+            <div class="meta-block">
+              <div class="meta-label">Generated At</div>
+              <div id="card-generated-at" class="meta-value">—</div>
+            </div>
+          </div>
         </div>
-        <div class="analysis-item">
-          <span>🧠 Strategy:</span>
-          <span id="card-strategy">Trend Follow</span>
+
+        <div class="divider"></div>
+
+        <div class="card-section main-info">
+          <div class="asset-tf">
+            <span id="card-asset">🇪🇺 EUR/USD</span>
+            <span class="separator">|</span>
+            <span id="card-tf">M15</span>
+          </div>
+          <div id="card-direction" class="direction-strength">
+            <span id="dir-text">🟢 BUY</span>
+            <span id="strength-text">(LOW)</span>
+          </div>
         </div>
-        <div class="analysis-item">
-          <span>⏳ Lifecycle Status:</span>
-          <span id="card-status-detailed">Checking...</span>
+
+        <div class="divider"></div>
+
+        <div class="card-section levels-section">
+          <div class="level-item">
+            <span class="icon">🎯</span>
+            <span>Entry:</span>
+            <b id="card-entry">1.16044</b>
+          </div>
+          <div class="level-item">
+            <span class="icon">💰</span>
+            <span>TP:</span>
+            <b id="card-tp">1.16194</b>
+          </div>
+          <div class="level-item">
+            <span class="icon">🛑</span>
+            <span>SL:</span>
+            <b id="card-sl">1.15894</b>
+          </div>
         </div>
-        <div class="analysis-item">
-          <span>🌊 Volatility:</span>
-          <span id="card-volatility">0.12%</span>
+
+        <div class="divider"></div>
+
+        <div class="card-section analysis-section">
+          <div class="analysis-item">
+            <span>⭐ Confidence:</span>
+            <span id="card-confidence">55%</span>
+          </div>
+          <div class="analysis-item">
+            <span>🧠 Strategy:</span>
+            <span id="card-strategy">Trend Follow</span>
+          </div>
+          <div class="analysis-item">
+            <span>⏳ Lifecycle Status:</span>
+            <span id="card-status-detailed">Checking...</span>
+          </div>
+          <div class="analysis-item">
+            <span>🌊 Volatility:</span>
+            <span id="card-volatility">0.12%</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-section disclaimer-section">
+          <div class="disclaimer-text">⚠️ Educational purpose only</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="card-section actions-section">
+          <button class="action-btn chart-btn">📈 View Chart</button>
+          <button class="action-btn refresh-btn" onclick="location.reload()">🔄 Refresh</button>
         </div>
       </div>
 
-      <div class="divider"></div>
-
-      <div class="card-section disclaimer-section">
-        <div class="disclaimer-text">⚠️ Educational purpose only</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="card-section actions-section">
-        <button class="action-btn chart-btn">📈 View Chart</button>
-        <button class="action-btn refresh-btn" onclick="location.reload()">🔄 Refresh</button>
+      <!-- Signal History Section -->
+      <h2 class="history-title">📜 Signal History</h2>
+      <div id="history-container" class="history-stack">
+        <!-- History cards will be loaded here -->
       </div>
     </div>
 
-    <!-- Signal History Section -->
-    <h2 class="history-title">📜 Signal History</h2>
-    <div id="history-container" class="history-stack">
-      <!-- History cards will be loaded here -->
+    <!-- Logs Tab Content -->
+    <div id="tab-logs" class="tab-pane">
+      <!-- Validation Table (Trades) -->
+      <div class="bento-card log-card">
+        <div class="card-section header-section">
+          <div class="record-header" style="border-bottom:none; margin-bottom:0; padding-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div class="main-title">Validation Events (Trader Proof)</div>
+                <div class="sub-title">Market Feed Verification Logs</div>
+              </div>
+              <button class="refresh-logs-btn" onclick="window.fetchLogs()">
+                🔄 Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th style="width:160px">Timestamp</th>
+                <th style="width:100px">ID</th>
+                <th style="width:120px">Type</th>
+                <th style="width:100px">Price</th>
+                <th style="width:140px">Status</th>
+                <th>Proof Details</th>
+              </tr>
+            </thead>
+            <tbody id="logs-body">
+              <tr>
+                <td colspan="6" class="empty-state">Loading validation data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Heartbeat Table (Machine Mind) -->
+      <div class="bento-card log-card">
+        <div class="card-section header-section">
+          <div class="record-header" style="border-bottom:none; margin-bottom:0; padding-bottom:0;">
+            <div class="main-title">AI Machine Heartbeat (Thinking Mind)</div>
+            <div class="sub-title">Real-time Market Evaluation Cycles</div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th style="width:120px">Time</th>
+                <th style="width:100px">Asset</th>
+                <th style="width:100px">Action</th>
+                <th style="width:80px">Conf</th>
+                <th style="width:80px">Str</th>
+                <th>Evaluation Logic / Refinement Reason</th>
+              </tr>
+            </thead>
+            <tbody id="heartbeat-body">
+              <tr>
+                <td colspan="6" class="empty-state">Scanning machine heartbeat...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 
